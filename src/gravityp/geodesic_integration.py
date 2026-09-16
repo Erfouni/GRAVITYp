@@ -150,7 +150,7 @@ def compute_geodesic(b, r_phs, inner_edge, radial_fun, radial_params, areal, are
     phi = integrate.odeint(
         geodesic_in, phi0, rr, (b,radial_fun,radial_params,areal,areal_params)
     ).reshape(-1,)
-    phi = phi[~np.isnan(phi)]
+    phi = phi[np.isfinite(phi)]
     rr = rr[:len(phi)]
 
     # NOTE: does not work properly with high r0 and low Npoints for outgoing geodesics
@@ -161,6 +161,8 @@ def compute_geodesic(b, r_phs, inner_edge, radial_fun, radial_params, areal, are
         phi_out = integrate.odeint(
             geodesic_out, phi0, rout, (b,radial_fun,radial_params,areal,areal_params)
         ).reshape(-1,)
+        phi_out = phi_out[np.isfinite(phi_out)]
+        rout = rout[:len(phi_out)]
         rr = np.concatenate([rr,rout])
         phi = np.concatenate([phi,phi_out])
 

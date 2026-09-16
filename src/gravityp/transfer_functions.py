@@ -19,10 +19,13 @@ def transfer_function(bb, order, correction: float=0, **kwargs):
         (rr,phi) = compute_geodesic(b, **kwargs)
         
         if abs(phi[-1]) > ( order*np.pi + np.pi/2 + correction ):
-            f_hat = CubicSpline(phi,rr)
-            r_b = f_hat(order*np.pi+np.pi/2+correction)
-            rbs.append(r_b)
-            bs.append(b)
+            try:
+                f_hat = CubicSpline(phi,rr)
+                r_b = f_hat(order*np.pi+np.pi/2+correction)
+                rbs.append(r_b)
+                bs.append(b)
+            except ValueError:
+                continue
 
     return ( np.array(bs), np.array(rbs) )
 
