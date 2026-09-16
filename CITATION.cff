@@ -10,7 +10,7 @@ authors:
   - family-names: "Sáez-Chillón Gómez"
     given-names: "Diego"
     orcid: "https://orcid.org/0000-0002-0714-2680"
-version: 0.1.2
+version: 0.1.3
 date-released: 2026-09-04
 repository-code: "https://github.com/alvaroslzar/GRAVITYp"
 keywords:
