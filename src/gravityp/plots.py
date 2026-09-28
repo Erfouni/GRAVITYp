@@ -14,6 +14,7 @@ from .geodesic_integration import compute_geodesic
 from .ray_tracing import compute_nturns, get_order
 from .transfer_functions import transfer_function
 from .shadows import total_intensity, compute_points
+from .embedding import surface_domain, make_embedding
 
 
 __all__ = [
@@ -31,7 +32,8 @@ __all__ = [
     "plot_observed_intensity",
     "plot_intensities",
     "plot_colorbar",
-    "make_shadow_plot"
+    "make_shadow_plot",
+    "make_embedding_plot"
 ]
 
 
@@ -288,6 +290,55 @@ def make_shadow_plot(bs_transfer_list, emission_model, kwargs,
     ax.set_yticks(np.arange(-10, 11, 5))
     plot_colorbar(fig, ax, im)
 
+    if savepath is not None:
+        plt.savefig(savepath)
+    plt.show()
+
+def make_embedding_plot(bs, r_phs,inner_edge, radial_fun, radial_params, areal, areal_params,
+                        figsize=(7,7), savepath=None):
+    
+    x_emb, y_emb = surface_domain(inner_edge, areal, areal_params)
+
+    r_emb, z_emb = make_embedding(inner_edge, radial_fun, radial_params, areal, areal_params)
+    z_surface = np.broadcast_to(z_emb[:, None], x_emb.shape)
+
+    fig, ax = plt.subplots(
+        figsize=figsize,
+        subplot_kw={"projection": "3d"},
+    )
+    ax.plot_surface(x_emb, y_emb, z_surface, color="0.8",
+                alpha=0.3, linewidth=0)
+    ax.set_axis_off()
+
+    coords = compute_geodesic(
+                bs, r_phs, inner_edge, radial_fun, radial_params, areal, areal_params)
+    r_ray, phi_ray = coords
+
+    valid = (
+        (r_ray >= r_emb[0])
+        & (r_ray <= r_emb[-1])
+    )# Only the region onto the embedding surface.
+
+    r_ray = r_ray[valid]
+    phi_ray = phi_ray[valid]
+
+    z_ray = np.interp(r_ray, r_emb, z_emb)# Evaluate z(r) by interpolation on the embedding profile.
+
+    R_ray = np.sqrt(
+        areal(r_ray, *to_tuple(areal_params))
+    ) # Convert (r, phi) into Cartesian embedding coordinates.
+
+    x_ray = R_ray * np.cos(phi_ray)
+    y_ray = R_ray * np.sin(phi_ray)
+
+    ax.plot(
+        x_ray,
+        y_ray,
+        z_ray,
+        color="red",
+        linewidth=1.5,
+    )
+    
     if savepath is not None:
         plt.savefig(savepath)
     plt.show()
