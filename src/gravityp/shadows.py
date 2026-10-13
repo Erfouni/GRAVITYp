@@ -4,35 +4,43 @@ appearance of a compact object and observed intensity profile.
 
 import numpy as np
 
-from .utils import to_tuple
+from .compact_object import BaseCompactObject
 from .transfer_functions import transfer_function
 
 
-__all__ = ["redshift", "observed_intensity", "total_intensity", "compute_points"]
+__all__ = ["redshift", "observed_intensity",
+           "total_intensity", "compute_points"]
 
 
-def redshift(r, radial_fun, radial_params):
+def redshift(r, co: BaseCompactObject):
     """Gravitational redshift"""
-    return np.sqrt(radial_fun(r, *to_tuple(radial_params)))
+    return np.sqrt(co.radial(r))
 
-def observed_intensity(eval_points, bs, rbs, emission_model, kwargs):
-    radial_fun = kwargs['radial_fun']
-    radial_params = kwargs['radial_params']
-    intensity = emission_model(rbs)*redshift(rbs, radial_fun, radial_params)**4
+
+def observed_intensity(eval_points, bs, rbs, emission_model,
+                       co: BaseCompactObject):
+    intensity = emission_model(rbs)*redshift(rbs, co)**4
     return np.interp(eval_points, bs, intensity, left=0, right=0)
 
-def total_intensity(bs, bs_transfer_list, emission_model, kwargs, correction=0):
-    intensity = np.zeros(shape=bs.shape) # Important to use bs.shape instead of len(bs)
+
+def total_intensity(bs, bs_transfer_list, emission_model,
+                    co: BaseCompactObject, correction=0, **geodesic_kwargs):
+    # Important to use bs.shape instead of len(bs)
+    intensity = np.zeros(shape=bs.shape)
 
     for order, bb in enumerate(bs_transfer_list):
-        points = transfer_function(bb, order, correction, **kwargs)
-        intensity += observed_intensity(bs, *points, emission_model, kwargs)
+        points = transfer_function(
+            bb, order, co, correction, **geodesic_kwargs)
+        intensity += observed_intensity(bs, *points, emission_model, co)
 
     return intensity
 
-def compute_points(bs_transfer_list, emission_model, kwargs, Npixels):
-    x = np.linspace(-10, 10, np.sqrt(Npixels).astype(int) )
-    y = np.linspace(-10, 10, np.sqrt(Npixels).astype(int) )
-    X,Y = np.meshgrid(x, y)
+
+def compute_points(bs_transfer_list, emission_model, co: BaseCompactObject,
+                   Npixels, correction=0, **geodesic_kwargs):
+    x = np.linspace(-10, 10, np.sqrt(Npixels).astype(int))
+    y = np.linspace(-10, 10, np.sqrt(Npixels).astype(int))
+    X, Y = np.meshgrid(x, y)
     B = np.sqrt(X**2 + Y**2)
-    return total_intensity(B, bs_transfer_list, emission_model, kwargs)
+    return total_intensity(B, bs_transfer_list, emission_model, co,
+                           correction, **geodesic_kwargs)
