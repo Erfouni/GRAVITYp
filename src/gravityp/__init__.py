@@ -5,7 +5,7 @@ compact objects in General Relativity.
 Source:    https://github.com/alvaroslzar/GRAVITYp
 """
 
-from .CompactObject import *
+from .compact_object import *
 from .utils import *
 from .geodesic_integration import *
 from .ray_tracing import *
