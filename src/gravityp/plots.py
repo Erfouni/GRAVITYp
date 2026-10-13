@@ -9,7 +9,6 @@ from matplotlib.patches import Circle
 from matplotlib import colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from .utils import to_tuple, to_list
 from .compact_object import BaseCompactObject
 from .geodesic_integration import compute_geodesic
 from .ray_tracing import compute_nturns, get_order
@@ -211,7 +210,8 @@ def make_transfer_function_plot(b_crits, co: BaseCompactObject, bs_list,
             plot_transfer_function(
                 ax, bs, order, co, correction, **geodesic_kwargs)
         else:
-            for bs_ring in to_list(bs):
+            bs_rings = bs if isinstance(bs, (list, tuple)) else [bs]
+            for bs_ring in bs_rings:
                 plot_transfer_function(
                     ax, bs_ring, order, co, correction, **geodesic_kwargs)
 
@@ -318,7 +318,8 @@ def make_shadow_plot(bs_transfer_list, emission_model, co: BaseCompactObject,
                        co, Npixels, **geodesic_kwargs)
 
     fig, ax = plt.subplots(figsize=figsize)
-    im = plot_intensities(ax, Z, *to_tuple(y_range))
+    vmin, vmax = y_range if y_range is not None else (None, None)
+    im = plot_intensities(ax, Z, vmin, vmax)
     ax.set_xticks(np.arange(-10, 11, 5))
     ax.set_yticks(np.arange(-10, 11, 5))
     plot_colorbar(fig, ax, im)
