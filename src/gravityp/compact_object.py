@@ -3,10 +3,28 @@
 import numpy as np
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Callable, Mapping
-from functools import partial
+from functools import cached_property, partial
 
 
 __all__ = ["BaseCompactObject", "CompactObject"]
+
+
+def _get_increasing_maxima(r_phs, potential):
+    """Returns increasing local maxima of the potential with their photon sphere values"""
+    if len(r_phs) >= 1:  # There has to be at least 1 local maximum
+        r_phs = np.array(r_phs)
+        r_phs = np.sort(r_phs)[::-1]  # descending order of
+        photon_sph = r_phs[0].reshape(1,)
+        local_maxima = potential(photon_sph)
+        for r_ph in r_phs:
+            maximum = potential(r_ph)
+            if maximum > local_maxima.max():  # We take increasing local maxima
+                local_maxima = np.append(local_maxima, maximum)
+                photon_sph = np.append(photon_sph, r_ph)
+        # Swap to ascending order of photon_spheres
+        return photon_sph[::-1], local_maxima[::-1]
+    else:
+        return np.array([]), np.array([])
 
 
 class BaseCompactObject(ABC):
@@ -15,11 +33,24 @@ class BaseCompactObject(ABC):
     ds^2 = -A(r) dt^2 + dr^2/A(r) + R(r) dOmega^2
 
     where A(r) = `self.radial(r)` and R(r) = `self.areal(r)`.
+
+    `r_phs` and `inner_edge` are read-only, so that cached quantities derived
+    from them (e.g. `potential_maxima`) cannot go stale.
     """
 
     def __init__(self, r_phs: Iterable[float], inner_edge: float) -> None:
-        self.r_phs = list(r_phs)
-        self.inner_edge = inner_edge
+        self._r_phs = tuple(r_phs)
+        self._inner_edge = inner_edge
+
+    @property
+    def r_phs(self) -> tuple[float, ...]:
+        """Positions of the photon spheres of the effective potential"""
+        return self._r_phs
+
+    @property
+    def inner_edge(self) -> float:
+        """Value of the r coordinate of the inner edge"""
+        return self._inner_edge
 
     @abstractmethod
     def radial(self, r: float | np.ndarray) -> float | np.ndarray:
@@ -32,6 +63,19 @@ class BaseCompactObject(ABC):
     def potential(self, r: float | np.ndarray) -> float | np.ndarray:
         """Effective potential V(r) = A(r)/R(r)"""
         return self.radial(r) / self.areal(r)
+
+    @cached_property
+    def potential_maxima(self) -> tuple[np.ndarray, np.ndarray]:
+        """Photon spheres and their increasing potential maxima, outermost barrier last
+
+        Computed once per instance. The returned arrays are read-only so the
+        cached values cannot be modified in place.
+        """
+        photon_sph, local_maxima = _get_increasing_maxima(self.r_phs,
+                                                          self.potential)
+        photon_sph.flags.writeable = False
+        local_maxima.flags.writeable = False
+        return photon_sph, local_maxima
 
 
 class CompactObject(BaseCompactObject):

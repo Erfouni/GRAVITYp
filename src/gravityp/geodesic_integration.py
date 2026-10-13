@@ -11,7 +11,6 @@ from .compact_object import BaseCompactObject
 
 
 __all__ = [
-    "get_increasing_maxima",
     "find_interval",
     "find_rmin",
     "geodesic_in",
@@ -26,27 +25,9 @@ DEFAULT_R0 = 1000.0  # Asymptotic boundary for initial conditions
 MINIMUM_R = 1e-6  # Minimum value of r for integration
 
 
-def get_increasing_maxima(r_phs, potential):
-    """Returns increasing local maxima of the potential with their photon sphere values"""
-    if len(r_phs) >= 1:  # There has to be at least 1 local maximum
-        r_phs = np.array(r_phs)
-        r_phs = np.sort(r_phs)[::-1]  # descending order of
-        photon_sph = r_phs[0].reshape(1,)
-        local_maxima = potential(photon_sph)
-        for r_ph in r_phs:
-            maximum = potential(r_ph)
-            if maximum > local_maxima.max():  # We take increasing local maxima
-                local_maxima = np.append(local_maxima, maximum)
-                photon_sph = np.append(photon_sph, r_ph)
-        # Swap to ascending order of photon_spheres
-        return photon_sph[::-1], local_maxima[::-1]
-    else:
-        return np.array([]), np.array([])
-
-
 def find_interval(inverse_b2, photon_sph, local_maxima, lower_bound=1e-4, upper_bound=100):
     """Returns the bounds (r1,r2) where the rmin is found for a given 1/b^2"""
-    # NOTE: photon_sph and local_maxima have to be ordered by get_increasing_maxima
+    # NOTE: photon_sph and local_maxima have to be ordered by co.potential_maxima
     if len(photon_sph) == 0 and len(local_maxima) == 0:  # Case 1: there is no local maximum
         return (lower_bound, upper_bound)
     # Case 2: 1/b^2 higher than all local maxima
@@ -74,7 +55,7 @@ def find_rmin(b, co: BaseCompactObject):
         i)  If b > bmin, then rmin is found by solving V(r)-1/b^2 = 0
         ii) If b < bmin, then rmin = inner_edge.
     """
-    photon_sph, local_maxima = get_increasing_maxima(co.r_phs, co.potential)
+    photon_sph, local_maxima = co.potential_maxima
     # Interval for Brent's method
     bounds = find_interval(1/b**2, photon_sph, local_maxima)
 
