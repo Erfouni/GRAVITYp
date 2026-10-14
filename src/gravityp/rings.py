@@ -13,8 +13,7 @@ __all__ = [
     "find_ring_bs",
     "get_minima",
     "find_rings_list",
-    "compute_optimal_array_steps",
-    "compute_optimal_array_Npoints"
+    "compute_optimal_array",
 ]
 
 
@@ -99,128 +98,54 @@ def find_rings_list(b_crits, co: BaseCompactObject, **geodesic_kwargs):
     return rings
 
 
-def compute_optimal_array_steps(bmin, bmax, rings,
-                                steps=(0.1, 0.01, 0.001), joint=True, fill=False):
+def _ring_intervals(bmin, bmax, rings, fill):
+    """Returns the (start, stop) intervals of impact parameters for the direct,
+    lensed and photon ring contributions as a triplet of lists
     """
-    Sample points with specified steps. 
+    if fill:
+        direct = [(bmin, bmax)]
+        lensed = [(ring["retro_lensed"][0], ring["lensed"][1])
+                  for ring in rings]
+        p_ring = [(ring["retro_p_ring"][0], ring["p_ring"][1])
+                  for ring in rings]
+    else:
+        # Direct image between consecutive rings, plus both tails
+        starts = [bmin] + [ring["lensed"][1] for ring in rings]
+        stops = [ring["retro_lensed"][0] for ring in rings] + [bmax]
+        direct = list(zip(starts, stops))
+        lensed = [ring[key]
+                  for ring in rings for key in ("retro_lensed", "lensed")]
+        p_ring = [ring[key]
+                  for ring in rings for key in ("retro_p_ring", "p_ring")]
+    return direct, lensed, p_ring
+
+
+def compute_optimal_array(bmin, bmax, rings, *, steps=None, Npoints=None,
+                          joint=True, fill=False):
+    """
+    Sample impact parameters around the rings, either with fixed step sizes
+    (steps) or with a fixed number of points per interval (Npoints).
+    Exactly one of them must be given. Each one is either a scalar or a triplet
+    (direct, lensed, photon ring), e.g. steps=(0.1, 0.01, 0.001).
     If joint=True (default), direct, lensed and photon ring contributions are
     returned in an ordered single array.
     If joint=False, these three contributions are returned as a triplet:
     ( bs_direct, bs_lensed, bs_p_ring )
+    If fill=True, each contribution is sampled over a single interval covering
+    all of its regions instead of only within them.
     """
-    bs_direct = []
-    bs_lensed = []
-    bs_p_ring = []
-
-    if not fill:
-        for i, ring in enumerate(rings):
-            # array of impact parameters for the direct image
-            start = bmin if i == 0 else rings[i-1]["lensed"][1]
-            stop = ring["retro_lensed"][0]
-            bs_direct.append(np.arange(start, stop, steps[0]))
-
-            # array of impact parameters for the lensed image
-            bs_lensed.append(
-                np.concatenate([
-                    np.arange(ring["retro_lensed"][0],
-                              ring["retro_lensed"][1], steps[1]),
-                    np.arange(ring["lensed"][0], ring["lensed"][1], steps[1])
-                ]).reshape(-1,)
-            )
-
-            # array of impact parameters for the ring image
-            bs_p_ring.append(
-                np.concatenate([
-                    np.arange(ring["retro_p_ring"][0],
-                              ring["retro_p_ring"][1], steps[2]),
-                    np.arange(ring["p_ring"][0], ring["p_ring"][1], steps[2])
-                ]).reshape(-1,)
-            )
-
-        # right tail of array for the direct image
-        bs_direct.append(np.arange(rings[-1]["lensed"][1], bmax, steps[0]))
+    if steps is not None and Npoints is None:
+        sample, params = np.arange, steps
+    elif Npoints is not None and steps is None:
+        sample, params = np.linspace, Npoints
     else:
-        bs_direct.append(np.arange(bmin, bmax, steps[0]))
-        for i, ring in enumerate(rings):
-            # array of impact parameters for the lensed image
-            bs_lensed.append(
-                np.arange(ring["retro_lensed"][0], ring["lensed"][1], steps[1])
-            )
+        raise ValueError("Pass exactly one of steps or Npoints")
+    params = np.broadcast_to(params, 3)  # Scalar -> same value for all three
 
-            # array of impact parameters for the ring image
-            bs_p_ring.append(
-                np.arange(ring["retro_p_ring"][0], ring["p_ring"][1], steps[2])
-            )
-
-    bs_direct = np.concatenate(bs_direct)
-    bs_lensed = np.concatenate(bs_lensed)
-    bs_p_ring = np.concatenate(bs_p_ring)
-
-    if joint:
-        total = np.sort(np.concatenate([bs_direct, bs_lensed, bs_p_ring]))
-        return total[(total >= bmin) & (total <= bmax)]
-    else:
-        return [bs_direct, bs_lensed, bs_p_ring]
-
-
-def compute_optimal_array_Npoints(bmin, bmax, rings,
-                                  Npoints=100, joint=True, fill=False):
-    """
-    Sample points with specified number of points. 
-    If joint=True (default), direct, lensed and photon ring contributions are
-    returned in an ordered single array.
-    If joint=False, these three contributions are returned as a triplet:
-    ( bs_direct, bs_lensed, bs_p_ring )
-    """
-    bs_direct = []
-    bs_lensed = []
-    bs_p_ring = []
-
-    if not fill:
-        for i, ring in enumerate(rings):
-            # array of impact parameters for the direct image
-            start = bmin if i == 0 else rings[i-1]["lensed"][1]
-            stop = ring["retro_lensed"][0]
-            bs_direct.append(np.linspace(start, stop, Npoints))
-
-            # array of impact parameters for the lensed image
-            bs_lensed.append(
-                np.concatenate([
-                    np.linspace(ring["retro_lensed"][0],
-                                ring["retro_lensed"][1], Npoints),
-                    np.linspace(ring["lensed"][0], ring["lensed"][1], Npoints)
-                ]).reshape(-1,)
-            )
-
-            # array of impact parameters for the ring image
-            bs_p_ring.append(
-                np.concatenate([
-                    np.linspace(ring["retro_p_ring"][0],
-                                ring["retro_p_ring"][1], Npoints),
-                    np.linspace(ring["p_ring"][0], ring["p_ring"][1], Npoints)
-                ]).reshape(-1,)
-            )
-
-        # right tail of array for the direct image
-        bs_direct.append(np.linspace(rings[-1]["lensed"][1], bmax, Npoints))
-    else:
-        bs_direct.append(np.linspace(bmin, bmax, Npoints))
-        for i, ring in enumerate(rings):
-            # array of impact parameters for the lensed image
-            bs_lensed.append(
-                np.linspace(ring["retro_lensed"][0],
-                            ring["lensed"][1], Npoints)
-            )
-
-            # array of impact parameters for the ring image
-            bs_p_ring.append(
-                np.linspace(ring["retro_p_ring"][0],
-                            ring["p_ring"][1], Npoints)
-            )
-
-    bs_direct = np.concatenate(bs_direct)
-    bs_lensed = np.concatenate(bs_lensed)
-    bs_p_ring = np.concatenate(bs_p_ring)
+    bs_direct, bs_lensed, bs_p_ring = (
+        np.concatenate([sample(start, stop, p) for start, stop in intervals])
+        for intervals, p in zip(_ring_intervals(bmin, bmax, rings, fill), params)
+    )
 
     if joint:
         total = np.sort(np.concatenate([bs_direct, bs_lensed, bs_p_ring]))

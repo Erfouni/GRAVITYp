@@ -13,8 +13,6 @@ from .compact_object import BaseCompactObject
 __all__ = [
     "find_interval",
     "find_rmin",
-    "geodesic_in",
-    "geodesic_out",
     "compute_outgoing",
     "compute_geodesic",
 ]
@@ -68,34 +66,26 @@ def find_rmin(b, co: BaseCompactObject):
     return max(max(root, co.inner_edge), MINIMUM_R)
 
 
-def geodesic_in(phi, r, b, co: BaseCompactObject):
-    """Expression for dphi/dr in the incoming null geodesic equation"""
+def dphi_dr(phi, r, b, co: BaseCompactObject, incoming: bool = True):
+    """Expression for dphi/dr in the null geodesic equation"""
     R = co.areal(r)  # Store value for single function call
-    return -(b / np.sqrt(R))/np.sqrt(R - b**2*co.radial(r))
+    sign = -2*int(incoming)+1
+    return sign*(b / np.sqrt(R))/np.sqrt(R - b**2*co.radial(r))
 
 
-def geodesic_out(phi, r, b, co: BaseCompactObject):
-    """Expression for dphi/dr in the outgoing null geodesic equation"""
-    R = co.areal(r)  # Store value for single function call
-    return +(b / np.sqrt(R))/np.sqrt(R - b**2*co.radial(r))
+def _integrator(phi0, rr, b, co: BaseCompactObject, incoming: bool):
+    phi = integrate.odeint(dphi_dr, phi0, rr, (b, co, incoming)).reshape(-1,)
+    finite = np.isfinite(phi)  # Finite values mask
+    return rr[finite], phi[finite]
 
 
 def compute_outgoing(r_phs, inner_edge, rmin) -> bool:
-    """Returns a boolean that tells whether to compute outgoing geodesic after reaching rmin"""
-    compute = False
-    if (len(r_phs) > 0):  # There is at least 1 photon sphere
-        innermost_photon_sphere = np.array(r_phs).min()
-        if (innermost_photon_sphere < MINIMUM_R):
-            if (rmin > MINIMUM_R):
-                compute = True
-        # if (rmin > inner_edge) and (innermost_photon_sphere > 0): # Probamos con inner_edge mejor
-        else:
-            # print('Hola')
-            if (rmin > inner_edge) and (rmin > MINIMUM_R):  # Probamos con inner_edge mejor
-                compute = True
-    else:  # There is no photon sphere
-        compute = True
-    return compute
+    """Decides whether to compute outgoing geodesic after reaching rmin"""
+    if len(r_phs) == 0:  # There is no photon sphere
+        return True
+    if min(r_phs) < MINIMUM_R:  # Innermost photon sphere very small
+        return rmin > MINIMUM_R  # Compute only if rmin is > MINIMUM_R
+    return (rmin > inner_edge) and (rmin > MINIMUM_R)
 
 
 def compute_geodesic(b, co: BaseCompactObject,
@@ -119,27 +109,16 @@ def compute_geodesic(b, co: BaseCompactObject,
     """
     rmin = find_rmin(b, co)
     # We must ensure rmin > 0 in find_rmin for np.geomspace
-    rr = np.geomspace(r0, rmin, Npoints)
+    rr_in = np.geomspace(r0, rmin, Npoints)
 
-    phi0 = b/rr[0]  # good approximation for r0>>rSch and better than phi0=0
-    phi = integrate.odeint(
-        geodesic_in, phi0, rr, (b, co)
-    ).reshape(-1,)
-    phi = phi[np.isfinite(phi)]
-    rr = rr[:len(phi)]
+    # phi0 = b/r0 is a good approximation for r0>>inner_edge
+    rr, phi = _integrator(b/r0, rr_in, b, co, incoming=True)
 
-    # NOTE: does not work properly with high r0 and low Npoints for outgoing geodesics
-    # FIXME: si len(r_phs)=0, solo integra incoming.
     if compute_outgoing(co.r_phs, co.inner_edge, rmin):
-        rout = rr[::-1]
         # Linear approx. for next angle. Required for strict monotonicity!!
         phi0 = 2*phi[-1]-phi[-2]
-        phi_out = integrate.odeint(
-            geodesic_out, phi0, rout, (b, co)
-        ).reshape(-1,)
-        phi_out = phi_out[np.isfinite(phi_out)]
-        rout = rout[:len(phi_out)]
-        rr = np.concatenate([rr, rout])
+        rr_out, phi_out = _integrator(phi0, rr[::-1], b, co, incoming=False)
+        rr = np.concatenate([rr, rr_out])
         phi = np.concatenate([phi, phi_out])
 
     return (rr, phi)
