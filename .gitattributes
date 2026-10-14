@@ -1,1 +1,6 @@
+# Normalize text files to LF on staging and check them out with LF
+* text=auto eol=lf
+
+*.png binary
+
 *.ipynb filter=strip-notebook-output
