@@ -80,21 +80,12 @@ def _integrator(phi0, rr, b, co: BaseCompactObject, incoming: bool):
 
 
 def compute_outgoing(r_phs, inner_edge, rmin) -> bool:
-    """Returns a boolean that tells whether to compute outgoing geodesic after reaching rmin"""
-    compute = False
-    if (len(r_phs) > 0):  # There is at least 1 photon sphere
-        innermost_photon_sphere = np.array(r_phs).min()
-        if (innermost_photon_sphere < MINIMUM_R):
-            if (rmin > MINIMUM_R):
-                compute = True
-        # if (rmin > inner_edge) and (innermost_photon_sphere > 0): # Probamos con inner_edge mejor
-        else:
-            # print('Hola')
-            if (rmin > inner_edge) and (rmin > MINIMUM_R):  # Probamos con inner_edge mejor
-                compute = True
-    else:  # There is no photon sphere
-        compute = True
-    return compute
+    """Decides whether to compute outgoing geodesic after reaching rmin"""
+    if len(r_phs) == 0:  # There is no photon sphere
+        return True
+    if min(r_phs) < MINIMUM_R:  # Innermost photon sphere very small
+        return rmin > MINIMUM_R  # Compute only if rmin is > MINIMUM_R
+    return (rmin > inner_edge) and (rmin > MINIMUM_R)
 
 
 def compute_geodesic(b, co: BaseCompactObject,
