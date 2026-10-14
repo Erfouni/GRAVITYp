@@ -13,8 +13,6 @@ from .compact_object import BaseCompactObject
 __all__ = [
     "find_interval",
     "find_rmin",
-    "geodesic_in",
-    "geodesic_out",
     "compute_outgoing",
     "compute_geodesic",
 ]
@@ -68,16 +66,11 @@ def find_rmin(b, co: BaseCompactObject):
     return max(max(root, co.inner_edge), MINIMUM_R)
 
 
-def geodesic_in(phi, r, b, co: BaseCompactObject):
-    """Expression for dphi/dr in the incoming null geodesic equation"""
+def dphi_dr(phi, r, b, co: BaseCompactObject, incoming: bool = True):
+    """Expression for dphi/dr in the null geodesic equation"""
     R = co.areal(r)  # Store value for single function call
-    return -(b / np.sqrt(R))/np.sqrt(R - b**2*co.radial(r))
-
-
-def geodesic_out(phi, r, b, co: BaseCompactObject):
-    """Expression for dphi/dr in the outgoing null geodesic equation"""
-    R = co.areal(r)  # Store value for single function call
-    return +(b / np.sqrt(R))/np.sqrt(R - b**2*co.radial(r))
+    sign = -1 if incoming else 1
+    return sign*(b / np.sqrt(R))/np.sqrt(R - b**2*co.radial(r))
 
 
 def compute_outgoing(r_phs, inner_edge, rmin) -> bool:
@@ -123,7 +116,7 @@ def compute_geodesic(b, co: BaseCompactObject,
 
     phi0 = b/rr[0]  # good approximation for r0>>rSch and better than phi0=0
     phi = integrate.odeint(
-        geodesic_in, phi0, rr, (b, co)
+        dphi_dr, phi0, rr, (b, co)
     ).reshape(-1,)
     phi = phi[np.isfinite(phi)]
     rr = rr[:len(phi)]
@@ -135,7 +128,7 @@ def compute_geodesic(b, co: BaseCompactObject,
         # Linear approx. for next angle. Required for strict monotonicity!!
         phi0 = 2*phi[-1]-phi[-2]
         phi_out = integrate.odeint(
-            geodesic_out, phi0, rout, (b, co)
+            dphi_dr, phi0, rout, (b, co, False)
         ).reshape(-1,)
         phi_out = phi_out[np.isfinite(phi_out)]
         rout = rout[:len(phi_out)]
