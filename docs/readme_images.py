@@ -1,6 +1,6 @@
 import numpy as np
 from gravityp import CompactObject
-from gravityp import intensity_at_inner_edge, compute_optimal_array_Npoints, find_rings_list
+from gravityp import intensity_at_inner_edge, compute_optimal_array, find_rings_list
 from gravityp import plot_emission_model, plot_observed_intensity, make_shadow_plot
 
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     savepath = 'images/README_observed.png'  # Uncomment for saving file
     bs = np.linspace(0, 10*np.sqrt(2), 1000)
-    bs_transfer_list = compute_optimal_array_Npoints(
+    bs_transfer_list = compute_optimal_array(
         0, 10*np.sqrt(2), rings_Schwarzschild, Npoints=100, joint=False, fill=True)
     plot_observed_intensity(bs, bs_transfer_list, emission_model, schw,
                             figsize=figsize, savepath=savepath)
