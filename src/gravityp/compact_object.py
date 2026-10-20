@@ -16,9 +16,9 @@ def _get_increasing_maxima(r_phs, potential):
         r_phs = np.sort(r_phs)[::-1]  # descending order of
         photon_sph = r_phs[0].reshape(1,)
         local_maxima = potential(photon_sph)
-        for r_ph in r_phs:
+        for r_ph in r_phs[1:]:  # Skip first to avoid duplicated evaluation
             maximum = potential(r_ph)
-            if maximum > local_maxima.max():  # We take increasing local maxima
+            if maximum > local_maxima.max():  # Take increasing local maxima
                 local_maxima = np.append(local_maxima, maximum)
                 photon_sph = np.append(photon_sph, r_ph)
         # Swap to ascending order of photon_spheres
