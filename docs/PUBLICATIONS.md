@@ -18,24 +18,26 @@ Let us know if you use **GRAVITYp** in your publication and we'll add it to this
 
 - Observational appearance and photon rings of non-singular black holes from anisotropic fluids, D. Díaz-Guerra et al., [arXiv:2511.21183v2 [gr-qc]](https://arxiv.org/abs/2511.21183v2)
 
-- Multiphoton ring structure of reflection-asymmetric traversable thin-shell wormholes, C.F.B. Macedo et al., [arXiv:2510.19677 [gr-qc]](https://arxiv.org/abs/2510.19677)
+- Multiphoton ring structure of reflection-asymmetric traversable thin-shell wormholes, C. F. B. Macedo et al., [arXiv:2510.19677 [gr-qc]](https://arxiv.org/abs/2510.19677)
 
-- Shadows from thin accretion disks of parametrized black hole solutions, G.J. Olmo et al., [arXiv:2507.16580 [gr-qc]](https://arxiv.org/abs/2507.16580)
+- Shadows from thin accretion disks of parametrized black hole solutions, G. J. Olmo et al., [arXiv:2507.16580 [gr-qc]](https://arxiv.org/abs/2507.16580)
 
-- Constraints on the $γ$-parameter for the vacuum solution of Cotton gravity with geodesics and shadows, E.L.B. Junior et al., [arXiv:2407.21655 [gr-qc]](https://arxiv.org/abs/2407.21655)
+- Constraints on the $γ$-parameter for the vacuum solution of Cotton gravity with geodesics and shadows, E. L. B. Junior et al., [arXiv:2407.21655 [gr-qc]](https://arxiv.org/abs/2407.21655)
 
-- Photon rings as tests for alternative spherically symmetric geometries with thin accretion disks, L.F.D. da Silva et al., [arXiv:2307.06778v2 [gr-qc]](https://arxiv.org/abs/2307.06778v2)
+- Observational imprints of gravastars from accretion disks and hot spots, J. L. Rosa et al., [arXiv:2401.07766 [gr-qc]](https://arxiv.org/abs/2401.07766)
 
-- Imaging compact boson stars with hot spots and thin accretion disks, J.L. Rosa et al., [arXiv:2303.17296 [gr-qc]](https://arxiv.org/abs/2303.17296)
+- Photon rings as tests for alternative spherically symmetric geometries with thin accretion disks, L. F. D. da Silva et al., [arXiv:2307.06778v2 [gr-qc]](https://arxiv.org/abs/2307.06778v2)
 
-- Shadows and photon rings of regular black holes and geonic horizonless compact objects, G.J.Olmo et al., [arXiv:2302.12064 [gr-qc]](https://arxiv.org/abs/2302.12064)
+- Imaging compact boson stars with hot spots and thin accretion disks, J. L. Rosa et al., [arXiv:2303.17296 [gr-qc]](https://arxiv.org/abs/2303.17296)
 
-- Observational properties of relativistic fluid spheres with thin accretion disks, J.L. Rosa, [arXiv:2302.11915 [gr-qc]](https://arxiv.org/abs/2302.11915)
+- Shadows and photon rings of regular black holes and geonic horizonless compact objects, G. J. Olmo et al., [arXiv:2302.12064 [gr-qc]](https://arxiv.org/abs/2302.12064)
+
+- Observational properties of relativistic fluid spheres with thin accretion disks, J. L. Rosa, [arXiv:2302.11915 [gr-qc]](https://arxiv.org/abs/2302.11915)
 
 - Multiring images of thin accretion disk of a regular naked compact object, M. Guerrero et al., [arXiv:2205.12147 [gr-qc]](https://arxiv.org/abs/2205.12147)
 
 - Light ring images of double photon spheres in black hole and wormhole spacetimes, M. Guerrero et al., [arXiv:2202.03809 [gr-qc]](https://arxiv.org/abs/2202.03809)
 
-- New light rings from multiple critical curves as observational signatures of black hole mimickers, G.J. Olmo et al., [arXiv:2110.10002 [gr-qc]](https://arxiv.org/abs/2110.10002)
+- New light rings from multiple critical curves as observational signatures of black hole mimickers, G. J. Olmo et al., [arXiv:2110.10002 [gr-qc]](https://arxiv.org/abs/2110.10002)
 
 - Shadows and optical appearance of black bounces illuminated by a thin accretion disk, M. Guerrero et al., [arXiv:2105.15073 [gr-qc]](https://arxiv.org/abs/2105.15073)
