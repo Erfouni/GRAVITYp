@@ -8,16 +8,16 @@ from .compact_object import BaseCompactObject
 from .geodesic_integration import compute_geodesic
 
 
-__all__ = ["compute_nturns_scalar", "compute_nturns", "get_order"]
+__all__ = ["compute_nturns", "get_order"]
 
 
-def compute_nturns_scalar(b, co: BaseCompactObject, **geodesic_kwargs):
+def _compute_nturns_scalar(b, co: BaseCompactObject, **geodesic_kwargs):
     (_, phi) = compute_geodesic(b, co, **geodesic_kwargs)
     return np.abs(phi[-1])/(2*np.pi)
 
 
 def compute_nturns(bs, co: BaseCompactObject, **geodesic_kwargs):
-    return np.array([compute_nturns_scalar(b, co, **geodesic_kwargs)
+    return np.array([_compute_nturns_scalar(b, co, **geodesic_kwargs)
                      for b in np.atleast_1d(bs)])
 
 

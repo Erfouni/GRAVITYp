@@ -17,25 +17,17 @@ from .shadows import total_intensity, compute_points
 
 
 __all__ = [
-    "plot_metric_function",
     "make_metric_function_plot",
-    "plot_half_graph",
     "plot_nturns",
-    "plot_geodesic",
-    "plot_BH",
     "make_geodesics_plot",
-    "plot_transfer_function",
     "make_transfer_function_plot",
-    "add_extra_tick",
     "plot_emission_model",
     "plot_observed_intensity",
-    "plot_intensities",
-    "plot_colorbar",
     "make_shadow_plot"
 ]
 
 
-def plot_metric_function(ax, r_range, fun, param, name):
+def _plot_metric_function(ax, r_range, fun, param, name):
     ax.plot(r_range, fun(r_range, param), label=f'{name}={param:.2f}')
 
 
@@ -46,7 +38,7 @@ def make_metric_function_plot(fun, params, r_range, figsize=(9, 6),
 
     for name, param_list in params.items():
         for param in param_list:
-            plot_metric_function(ax, r_range, fun, param, name)
+            _plot_metric_function(ax, r_range, fun, param, name)
 
     ax.set_xlim(r_range[0], r_range[-1])
     ax.set_ylim(-1, 1)
@@ -65,7 +57,7 @@ def make_metric_function_plot(fun, params, r_range, figsize=(9, 6),
     plt.show()
 
 
-def plot_half_graph(ax, bs, co: BaseCompactObject, plot_label=False,
+def _plot_half_graph(ax, bs, co: BaseCompactObject, plot_label=False,
                     **geodesic_kwargs):
     """Auxiliary function for plot_nturns"""
     nturns = compute_nturns(bs, co, **geodesic_kwargs)
@@ -95,11 +87,11 @@ def plot_nturns(bs, b_crits, co: BaseCompactObject, figsize=(7, 7),
     xtick_labels = [f'{tick}' for tick in xticks]
 
     if len(b_crits) == 0:
-        plot_half_graph(ax, bs, co, plot_label=True, **geodesic_kwargs)
+        _plot_half_graph(ax, bs, co, plot_label=True, **geodesic_kwargs)
     else:
         # Interval from 0 to first b_crit, plotting labels
         bs_interval = bs[bs <= b_crits[0]]
-        plot_half_graph(ax, bs_interval, co, plot_label=True,
+        _plot_half_graph(ax, bs_interval, co, plot_label=True,
                         **geodesic_kwargs)
         ax.vlines(b_crits[0], 0, 2, colors='gray',
                   linestyles='dashed', zorder=0)
@@ -113,7 +105,7 @@ def plot_nturns(bs, b_crits, co: BaseCompactObject, figsize=(7, 7),
         if len(b_crits) > 1:
             for i, b_crit in enumerate(b_crits[1:], start=1):
                 bs_interval = bs[(bs >= b_crits[i-1]) & (bs < b_crit)]
-                plot_half_graph(ax, bs_interval, co, plot_label=False,
+                _plot_half_graph(ax, bs_interval, co, plot_label=False,
                                 **geodesic_kwargs)
                 ax.vlines(b_crit, 0, 2, colors='gray',
                           linestyles='dashed', zorder=0)
@@ -122,7 +114,7 @@ def plot_nturns(bs, b_crits, co: BaseCompactObject, figsize=(7, 7),
 
         # Last interval from last b_crit to infinity
         bs_interval = bs[bs >= b_crits[-1]]
-        plot_half_graph(ax, bs_interval, co,
+        _plot_half_graph(ax, bs_interval, co,
                         plot_label=False, **geodesic_kwargs)
 
     ax.set_xlim(0, 10)
@@ -138,7 +130,7 @@ def plot_nturns(bs, b_crits, co: BaseCompactObject, figsize=(7, 7),
     plt.show()
 
 
-def plot_geodesic(axes, co: BaseCompactObject, rr, phi, color=None):
+def _plot_geodesic(axes, co: BaseCompactObject, rr, phi, color=None):
     # NOTE: the plotted coordinate refers to the areal radius
     if color is None:
         order = get_order(phi[-1])
@@ -149,7 +141,7 @@ def plot_geodesic(axes, co: BaseCompactObject, rr, phi, color=None):
     axes.plot(*trajectory, color=color, linewidth=0.5, alpha=1)
 
 
-def plot_BH(axes, co: BaseCompactObject):
+def _plot_BH(axes, co: BaseCompactObject):
     # NOTE: Within this function, the variable r refers to the areal radius
     i_edge_kwargs = {'color': 'black', 'fill': (co.inner_edge != 0)}
     p_ring_kwargs = {'color': 'black', 'fill': False}
@@ -173,8 +165,8 @@ def make_geodesics_plot(bs_dict, co: BaseCompactObject, figsize=(7, 7),
     for label, (color, bs) in bs_dict.items():
         for b in np.atleast_1d(bs):
             coords = compute_geodesic(b, co, **geodesic_kwargs)
-            plot_geodesic(ax, co, *coords, color)
-    plot_BH(ax, co)
+            _plot_geodesic(ax, co, *coords, color)
+    _plot_BH(ax, co)
 
     ax.set_xlim(-10, 10)
     ax.set_ylim(-10, 10)
@@ -189,7 +181,7 @@ def make_geodesics_plot(bs_dict, co: BaseCompactObject, figsize=(7, 7),
     plt.show()
 
 
-def plot_transfer_function(axes, bs, order, co: BaseCompactObject,
+def _plot_transfer_function(axes, bs, order, co: BaseCompactObject,
                            correction=0, **geodesic_kwargs):
     # NOTE: bs in bs_list can also be lists for lensed and photon ring, which
     # will be plotted separately
@@ -207,12 +199,12 @@ def make_transfer_function_plot(b_crits, co: BaseCompactObject, bs_list,
 
     for order, bs in enumerate(bs_list):
         if order == 0:
-            plot_transfer_function(
+            _plot_transfer_function(
                 ax, bs, order, co, correction, **geodesic_kwargs)
         else:
             bs_rings = bs if isinstance(bs, (list, tuple)) else [bs]
             for bs_ring in bs_rings:
-                plot_transfer_function(
+                _plot_transfer_function(
                     ax, bs_ring, order, co, correction, **geodesic_kwargs)
 
     xticks = [i for i in range(0, 11, 2)]
@@ -233,7 +225,7 @@ def make_transfer_function_plot(b_crits, co: BaseCompactObject, bs_list,
 # Intensity and shadows
 
 
-def add_extra_tick(xticks, xticklabels, extra_tick=None, extra_ticklabel=None):
+def _add_extra_tick(xticks, xticklabels, extra_tick=None, extra_ticklabel=None):
     if (extra_tick is not None) and (extra_ticklabel is not None):
         threshold = 0.6  # Minimum allowed distance between labels
         xticks = [t for t in xticks if abs(t - extra_tick) > threshold]
@@ -255,7 +247,7 @@ def plot_emission_model(rs, emission_model, text_string=None,
     # Add an extra xtick placed at specified position
     xticks = [i for i in range(rmin, rmax, 2)]
     xticklabels = [f'{t}' for t in xticks]
-    xticks, xticklabels = add_extra_tick(xticks, xticklabels, tick, ticklabel)
+    xticks, xticklabels = _add_extra_tick(xticks, xticklabels, tick, ticklabel)
 
     ax.set_xlabel(r'$r/M$')
     ax.set_xticks(xticks)
@@ -290,7 +282,7 @@ def plot_observed_intensity(bs, bs_transfer_list, emission_model,
     plt.show()
 
 
-def plot_intensities(ax, z, vmin=None, vmax=None):
+def _plot_intensities(ax, z, vmin=None, vmax=None):
     return ax.imshow(
         z,
         norm=colors.PowerNorm(1, vmin, vmax),
@@ -301,7 +293,7 @@ def plot_intensities(ax, z, vmin=None, vmax=None):
     )
 
 
-def plot_colorbar(fig, ax, im):
+def _plot_colorbar(fig, ax, im):
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.15)
     cb = fig.colorbar(im, cax=cax)
@@ -316,10 +308,10 @@ def make_shadow_plot(bs_transfer_list, emission_model, co: BaseCompactObject,
 
     fig, ax = plt.subplots(figsize=figsize)
     vmin, vmax = y_range if y_range is not None else (None, None)
-    im = plot_intensities(ax, Z, vmin, vmax)
+    im = _plot_intensities(ax, Z, vmin, vmax)
     ax.set_xticks(np.arange(-10, 11, 5))
     ax.set_yticks(np.arange(-10, 11, 5))
-    plot_colorbar(fig, ax, im)
+    _plot_colorbar(fig, ax, im)
 
     if savepath is not None:
         plt.savefig(savepath)
