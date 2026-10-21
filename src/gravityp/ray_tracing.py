@@ -1,16 +1,4 @@
-r"""Number of turns and order of light rays.
-
-For a face-on observer, the number of turns :math:`n = \phi/(2\pi)` of a light
-ray, with :math:`\phi` its total deflection, determines how many times it
-crosses the accretion disk. Light rays are thus classified by their order:
-direct (0), lensed (1) or photon ring (2) [1]_.
-
-References
-----------
-.. [1] S. E. Gralla, D. E. Holz and R. M. Wald, "Black hole shadows, photon
-   rings, and lensing rings", Phys. Rev. D 100, 024018 (2019),
-   arXiv:1906.00873.
-"""
+"""Number of turns and order of light rays."""
 
 import numpy as np
 
@@ -97,8 +85,15 @@ def get_order(deviation: float, correction: float = 0) -> int:
 
     Notes
     -----
-    A light ray of order 0, 1 or 2 crosses the accretion disk once, twice, or
-    three or more times, respectively.
+    For a face-on observer, a light ray of order 0, 1 or 2 crosses the
+    accretion disk once, twice, or three or more times, respectively. This
+    classification into direct, lensed and photon ring images follows [1]_.
+
+    References
+    ----------
+    .. [1] S. E. Gralla, D. E. Holz and R. M. Wald, "Black hole shadows, photon
+       rings, and lensing rings", Phys. Rev. D 100, 024018 (2019),
+       arXiv:1906.00873.
 
     Examples
     --------

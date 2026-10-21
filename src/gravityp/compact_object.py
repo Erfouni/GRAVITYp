@@ -1,14 +1,4 @@
-"""Base classes describing static, spherically symmetric compact objects.
-
-Every compact object is defined by its line element
-
-    ds^2 = -A(r) dt^2 + dr^2/A(r) + R(r) dOmega^2
-
-together with its photon spheres and the inner edge of the accretion disk.
-`BaseCompactObject` is the interface used by the rest of the package: subclass
-it (as done in `gravityp.zoo`) or use `CompactObject` to build one directly from
-plain Python functions.
-"""
+"""Base classes for static, spherically symmetric compact objects."""
 
 import numpy as np
 from abc import ABC, abstractmethod

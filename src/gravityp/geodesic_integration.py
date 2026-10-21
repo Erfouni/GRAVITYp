@@ -1,10 +1,4 @@
-"""Integration of null geodesics (light rays) in a compact object geometry.
-
-Light rays are sent from a distant observer with a given impact parameter `b`
-and integrated in the equatorial plane, as the azimuthal angle `phi` along the
-radial coordinate `r`. `find_rmin` locates their turning point, and
-`compute_geodesic` traces the full trajectory.
-"""
+"""Integration of null geodesics (light rays)."""
 
 import numpy as np
 import scipy.integrate as integrate

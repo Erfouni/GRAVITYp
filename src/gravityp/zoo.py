@@ -1,13 +1,4 @@
-"""Predefined compact objects.
-
-Ready-to-use subclasses of `BaseCompactObject`, in units of M=1, whose photon
-spheres and inner edge are computed from their parameters:
-
-- `Schwarzschild`: Schwarzschild black hole.
-- `SimpsonVisser`: Simpson-Visser black bounces and wormholes.
-- `BardeenBH`: Bardeen regular black holes and horizonless geometries.
-- `BardeenBB`: Bardeen-like black bounces and wormholes.
-"""
+"""Predefined compact objects."""
 
 import numpy as np
 import scipy.optimize as optimize
