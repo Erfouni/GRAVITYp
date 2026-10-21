@@ -11,6 +11,8 @@ It was developed to study the optical appearance or *shadow* cast by black holes
 Then, Á. Salazar Cuadros preferred to work on Python seeking faster execution times for simulations and a language better suited for Version Control Systems (VCS), and that's how the Python implementation was born.
 The goal of this open source version is to provide open access to anyone interested in using the package or learning how simulated black hole shadow images are generated.
 
+An open-source application of **GRAVITYp** in Wolfram Language can be found in the [Wolfram Community](https://community.wolfram.com/t/observational-imprints-of-gravastars-from-accretion-disks-and-hot-spots/23597) (Observational imprints of gravastars from accretion disks and hot-spots​ by João Luís Rosa, Daniela S. J. Cordeiro, Caio F. B. Macedo, Francisco S. N. Lobo, Gonzalo Olmo and Diego Rubiera-Garcia​. Wolfram Community, STAFF PICKS, February 15, 2024).
+
 ## Installation
 
 ### From PyPI
