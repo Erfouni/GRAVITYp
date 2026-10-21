@@ -1,10 +1,4 @@
-"""This module contains utilities and predefined functions to plot figures
-abount the different steps of the code.
-
-Every public function draws on `ax` if given (otherwise on a new figure of size
-`figsize`) and returns `(fig, ax)`, so the figure can be further customised and
-then displayed with `plt.show()` or saved with `fig.savefig(...)`.
-"""
+"""Plots of each step of the ray-tracing pipeline."""
 
 import numpy as np
 
@@ -39,10 +33,41 @@ def _get_fig_ax(ax, figsize):
 
 
 def _plot_metric_function(ax, r_range, fun, param, name):
+    """Plots fun(r, param) on ax, labelled as name=param"""
     ax.plot(r_range, fun(r_range, param), label=f'{name}={param:.2f}')
 
 
 def make_metric_function_plot(fun, params, r_range, figsize=(9, 6), ax=None):
+    """Plot a metric function for several values of its parameter.
+
+    Parameters
+    ----------
+    fun : callable
+        Metric function, called as ``fun(r, param)``. The title is taken
+        from its name without the first two characters, e.g. ``A_bardeen``
+        gives "Bardeen metric function".
+    params : dict of str to sequence of float
+        Maps the name of the parameter, shown in the legend, to the values to
+        plot. Each value is passed as the second positional argument of `fun`.
+    r_range : ndarray
+        Increasing radial coordinates where `fun` is evaluated, which also set
+        the limits of the horizontal axis.
+    figsize : tuple of float, optional
+        Size of the new figure, ignored if `ax` is given. Default is (9, 6).
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None (default), a new figure is created.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure containing the plot.
+    ax : matplotlib.axes.Axes
+        Axes containing the plot.
+
+    Notes
+    -----
+    The vertical axis is fixed to ``[-1, 1]``.
+    """
     fig, ax = _get_fig_ax(ax, figsize)
     ax.set_title(f'{fun.__name__[2:].capitalize()} metric function')
 
@@ -90,6 +115,47 @@ def _plot_half_graph(ax, bs, co: BaseCompactObject, plot_label=False,
 
 def plot_nturns(bs, b_crits, co: BaseCompactObject, figsize=(7, 7), ax=None,
                 **geodesic_kwargs):
+    """Plot the number of turns of light rays against their impact parameter.
+
+    The curve is coloured by image type: direct (black), lensed (orange) and
+    photon ring (red). Each critical impact parameter is marked with a dashed
+    vertical line.
+
+    Parameters
+    ----------
+    bs : ndarray
+        Increasing impact parameters of the light rays, in units of M.
+    b_crits : sequence of float
+        Critical impact parameters of the photon spheres, in increasing order.
+        May be empty.
+    co : BaseCompactObject
+        Compact object defining the geometry.
+    figsize : tuple of float, optional
+        Size of the new figure, ignored if `ax` is given. Default is (7, 7).
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None (default), a new figure is created.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure containing the plot.
+    ax : matplotlib.axes.Axes
+        Axes containing the plot.
+
+    Other Parameters
+    ----------------
+    **geodesic_kwargs
+        Keyword arguments passed to `gravityp.compute_geodesic`, such as
+        `Npoints` or `r0`.
+
+    See Also
+    --------
+    gravityp.compute_nturns : Number of turns of light rays.
+
+    Notes
+    -----
+    The axes are fixed to ``0 <= b <= 10`` and ``0 <= n <= 2``.
+    """
     fig, ax = _get_fig_ax(ax, figsize)
     xticks = [i for i in range(0, 11, 2)]
     xtick_labels = [f'{tick}' for tick in xticks]
@@ -137,6 +203,7 @@ def plot_nturns(bs, b_crits, co: BaseCompactObject, figsize=(7, 7), ax=None,
 
 
 def _plot_geodesic(axes, co: BaseCompactObject, rr, phi, color=None):
+    """Plots a trajectory, coloured by its order if color is None"""
     # NOTE: the plotted coordinate refers to the areal radius
     if color is None:
         order = get_order(phi[-1])
@@ -148,6 +215,7 @@ def _plot_geodesic(axes, co: BaseCompactObject, rr, phi, color=None):
 
 
 def _plot_BH(axes, co: BaseCompactObject):
+    """Draws the inner edge and the photon spheres of the compact object"""
     # NOTE: Within this function, the variable r refers to the areal radius
     i_edge_kwargs = {'color': 'black', 'fill': (co.inner_edge != 0)}
     p_ring_kwargs = {'color': 'black', 'fill': False}
@@ -164,6 +232,51 @@ def _plot_BH(axes, co: BaseCompactObject):
 
 def make_geodesics_plot(bs_dict, co: BaseCompactObject, figsize=(7, 7),
                         ax=None, **geodesic_kwargs):
+    r"""Plot the trajectories of light rays around a compact object.
+
+    The trajectories are drawn in the plane of motion, taking the areal radius
+    :math:`\sqrt{R(r)}` as radial coordinate. The inner edge is drawn as a
+    black disk (an empty circle if ``co.inner_edge == 0``), and the photon
+    spheres as dashed circles.
+
+    Parameters
+    ----------
+    bs_dict : array_like or dict
+        Impact parameters of the light rays, in units of M, coloured by order:
+        direct (blue), lensed (orange) and photon ring (red). Alternatively, a
+        dictionary mapping labels to ``(color, bs)`` pairs, to give each group
+        of impact parameters its own colour. A None colour colours the group
+        by order.
+    co : BaseCompactObject
+        Compact object defining the geometry.
+    figsize : tuple of float, optional
+        Size of the new figure, ignored if `ax` is given. Default is (7, 7).
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None (default), a new figure is created.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure containing the plot.
+    ax : matplotlib.axes.Axes
+        Axes containing the plot.
+
+    Other Parameters
+    ----------------
+    **geodesic_kwargs
+        Keyword arguments passed to `gravityp.compute_geodesic`, such as
+        `Npoints` or `r0`.
+
+    See Also
+    --------
+    gravityp.compute_geodesic : Trajectory of a light ray.
+
+    Notes
+    -----
+    The axes are fixed to ``[-10, 10]``. Light rays come from the right, so a
+    secondary vertical axis on the right marks their impact parameters from 0
+    to 10. The labels of `bs_dict` are not used.
+    """
     fig, ax = _get_fig_ax(ax, figsize)
 
     if bs_dict.__class__ != dict:
@@ -186,6 +299,7 @@ def make_geodesics_plot(bs_dict, co: BaseCompactObject, figsize=(7, 7),
 
 def _plot_transfer_function(axes, bs, order, co: BaseCompactObject,
                             correction=0, **geodesic_kwargs):
+    """Plots the transfer function of the given order, labelled by image type"""
     # NOTE: bs in bs_list can also be lists for lensed and photon ring, which
     # will be plotted separately
     order_colors = ['dodgerblue', 'orange', 'red']
@@ -198,6 +312,54 @@ def _plot_transfer_function(axes, bs, order, co: BaseCompactObject,
 def make_transfer_function_plot(b_crits, co: BaseCompactObject, bs_list,
                                 correction=0, figsize=(7, 7), ax=None,
                                 **geodesic_kwargs):
+    """Plot the transfer functions of each order.
+
+    The curves are coloured and labelled by image type: direct (blue), lensed
+    (orange) and photon ring (red), so a legend can be added with
+    ``ax.legend()``.
+
+    Parameters
+    ----------
+    b_crits : sequence of float
+        Critical impact parameters of the photon spheres. Currently unused.
+    co : BaseCompactObject
+        Compact object defining the geometry.
+    bs_list : sequence
+        Impact parameters sampling the transfer function of each order,
+        starting from order 0. For orders 1 and 2, an element can also be a
+        list or tuple of arrays, plotted as separate curves (e.g. the inner
+        and outer parts of a ring).
+    correction : float, optional
+        Additional angle the light ray must travel to reach the accretion
+        disk, which depends on the observer's inclination and on the polar
+        angle on the observer's screen. Inclined observers are not supported
+        yet, so only the face-on value 0 (default) is meaningful.
+    figsize : tuple of float, optional
+        Size of the new figure, ignored if `ax` is given. Default is (7, 7).
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None (default), a new figure is created.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure containing the plot.
+    ax : matplotlib.axes.Axes
+        Axes containing the plot.
+
+    Other Parameters
+    ----------------
+    **geodesic_kwargs
+        Keyword arguments passed to `gravityp.compute_geodesic`, such as
+        `Npoints` or `r0`.
+
+    See Also
+    --------
+    gravityp.transfer_function : Transfer function of a given order.
+
+    Notes
+    -----
+    The axes are fixed to ``0 <= b <= 10`` and ``0 <= r_m <= 15``.
+    """
     fig, ax = _get_fig_ax(ax, figsize)
 
     for order, bs in enumerate(bs_list):
@@ -226,6 +388,7 @@ def make_transfer_function_plot(b_crits, co: BaseCompactObject, bs_list,
 
 
 def _add_extra_tick(xticks, xticklabels, extra_tick=None, extra_ticklabel=None):
+    """Adds a labelled tick, removing the regular ticks too close to it"""
     if (extra_tick is not None) and (extra_ticklabel is not None):
         threshold = 0.6  # Minimum allowed distance between labels
         xticks = [t for t in xticks if abs(t - extra_tick) > threshold]
@@ -237,6 +400,42 @@ def _add_extra_tick(xticks, xticklabels, extra_tick=None, extra_ticklabel=None):
 
 def plot_emission_model(rs, emission_model, text_string=None,
                         tick=None, ticklabel=None, figsize=(7, 7), ax=None):
+    """Plot an emission profile of the accretion disk.
+
+    Parameters
+    ----------
+    rs : ndarray
+        Radial coordinates where the profile is evaluated, which also set the
+        limits of the horizontal axis.
+    emission_model : callable
+        Emitted intensity :math:`I_{em}(r)`, taking an ndarray of radii.
+    text_string : str, optional
+        Text shown at the data coordinates ``(7.5, 0.8)``. Default is None.
+    tick, ticklabel : float and str, optional
+        Position and label of an extra tick on the horizontal axis, e.g. to
+        mark where the emission starts. Both must be given, and regular ticks
+        too close to it are removed. Default is None.
+    figsize : tuple of float, optional
+        Size of the new figure, ignored if `ax` is given. Default is (7, 7).
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None (default), a new figure is created.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure containing the plot.
+    ax : matplotlib.axes.Axes
+        Axes containing the plot.
+
+    See Also
+    --------
+    gravityp.emission_models : Predefined emission profiles.
+
+    Notes
+    -----
+    The vertical axis is fixed to ``[0, 1]``, suited to profiles normalised
+    to a maximum of 1.
+    """
     fig, ax = _get_fig_ax(ax, figsize)
     ax.plot(rs, emission_model(rs), label=r'$I_{\mathrm{em}}/I_0$')
 
@@ -262,6 +461,47 @@ def plot_emission_model(rs, emission_model, text_string=None,
 def plot_observed_intensity(bs, bs_transfer_list, emission_model,
                             co: BaseCompactObject, figsize=(7, 7), ax=None,
                             y_range=None, **geodesic_kwargs):
+    """Plot the observed intensity profile of a face-on accretion disk.
+
+    Parameters
+    ----------
+    bs : ndarray
+        Impact parameters where the intensity is evaluated, in units of M,
+        which also set the limits of the horizontal axis.
+    bs_transfer_list : sequence of ndarray
+        Increasing impact parameters sampling the transfer function of each
+        order, starting from order 0. Usually computed with
+        ``compute_optimal_array(..., joint=False, fill=True)``.
+    emission_model : callable
+        Emitted intensity :math:`I_{em}(r)`, taking an ndarray of radii.
+    co : BaseCompactObject
+        Compact object defining the geometry.
+    figsize : tuple of float, optional
+        Size of the new figure, ignored if `ax` is given. Default is (7, 7).
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None (default), a new figure is created.
+    y_range : tuple of float, optional
+        Limits ``(bottom, top)`` of the vertical axis. If None (default), they
+        are set automatically.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure containing the plot.
+    ax : matplotlib.axes.Axes
+        Axes containing the plot.
+
+    Other Parameters
+    ----------------
+    **geodesic_kwargs
+        Keyword arguments passed to `gravityp.compute_geodesic`, such as
+        `Npoints` or `r0`.
+
+    See Also
+    --------
+    gravityp.total_intensity : Observed intensity profile.
+    make_shadow_plot : Image of the compact object.
+    """
     fig, ax = _get_fig_ax(ax, figsize)
     ax.plot(bs, total_intensity(bs, bs_transfer_list, emission_model, co,
                                 **geodesic_kwargs),
@@ -278,6 +518,7 @@ def plot_observed_intensity(bs, bs_transfer_list, emission_model,
 
 
 def _plot_intensities(ax, z, vmin=None, vmax=None):
+    """Shows the image z on ax, covering [-10, 10] along both axes"""
     return ax.imshow(
         z,
         norm=colors.PowerNorm(1, vmin, vmax),
@@ -289,6 +530,7 @@ def _plot_intensities(ax, z, vmin=None, vmax=None):
 
 
 def _plot_colorbar(fig, ax, im):
+    """Adds a colorbar for im on the right of ax"""
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.15)
     return fig.colorbar(im, cax=cax)
@@ -297,6 +539,49 @@ def _plot_colorbar(fig, ax, im):
 def make_shadow_plot(bs_transfer_list, emission_model, co: BaseCompactObject,
                      figsize=(7, 7), ax=None, y_range=None, Npixels=1e6,
                      **geodesic_kwargs):
+    """Plot the image of a compact object surrounded by a face-on disk.
+
+    The observed intensity is shown on the observer's screen, covering
+    ``[-10, 10]`` in units of M along both axes, together with a colorbar.
+
+    Parameters
+    ----------
+    bs_transfer_list : sequence of ndarray
+        Increasing impact parameters sampling the transfer function of each
+        order, starting from order 0. Usually computed with
+        ``compute_optimal_array(..., joint=False, fill=True)``.
+    emission_model : callable
+        Emitted intensity :math:`I_{em}(r)`, taking an ndarray of radii.
+    co : BaseCompactObject
+        Compact object defining the geometry.
+    figsize : tuple of float, optional
+        Size of the new figure, ignored if `ax` is given. Default is (7, 7).
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None (default), a new figure is created.
+    y_range : tuple of float, optional
+        Limits ``(vmin, vmax)`` of the colour scale. If None (default), they
+        are set from the data.
+    Npixels : int or float, optional
+        Total number of pixels of the image. Default is 1e6.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure containing the plot.
+    ax : matplotlib.axes.Axes
+        Axes containing the image. The colorbar lies in separate axes, and
+        can be accessed as ``ax.images[0].colorbar``.
+
+    Other Parameters
+    ----------------
+    **geodesic_kwargs
+        Keyword arguments passed to `gravityp.compute_geodesic`, such as
+        `Npoints` or `r0`.
+
+    See Also
+    --------
+    gravityp.compute_points : Observed intensity on the observer's screen.
+    """
 
     Z = compute_points(bs_transfer_list, emission_model,
                        co, Npixels, **geodesic_kwargs)
