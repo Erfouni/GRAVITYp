@@ -217,8 +217,6 @@ def make_transfer_function_plot(b_crits, co: BaseCompactObject, bs_list,
 
     xticks = [i for i in range(0, 11, 2)]
     xticklabels = [f'{t}' for t in xticks]
-    # xticks += [b_crit]
-    # xticklabels += [r'$b_c$']
 
     ax.set_xlabel(r'$b/M$')
     ax.set_ylabel(r'$r_m/M$')
@@ -263,7 +261,6 @@ def plot_emission_model(rs, emission_model, text_string=None,
     ax.set_xticks(xticks)
     ax.set_xticklabels(xticklabels)
     ax.set_xlim(rmin, rmax)
-    # ax.set_ylabel(r'$I_\mathrm{em}/I_0$')
     ax.set_ylim(0, 1)
     if text_string is not None:
         ax.text(7.5, 0.8, s=text_string)

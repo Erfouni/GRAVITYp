@@ -43,7 +43,7 @@ def find_ring_bs(b_crit, ring_interval, epsilon, scalar_fun_nturns):
     """Returns the interval of impact parameters where lensed and photon rings
     are found around a single b_crit
     """
-    # TODO: considerar el caso en el que los lensed/photon rings se solapan
+    # TODO: issue #32
     def fun_lensed(b):
         return scalar_fun_nturns(b)-0.75
 
