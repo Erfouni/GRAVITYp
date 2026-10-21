@@ -1,8 +1,7 @@
-"""
-GRAVITYp: Python package to study the optical appearance of spherically symmetric
-compact objects in General Relativity.
+"""Optical appearance of spherically symmetric compact objects in General
+Reltivity.
 
-Source:    https://github.com/alvaroslzar/GRAVITYp
+Source: https://github.com/alvaroslzar/GRAVITYp
 """
 
 from .compact_object import *
