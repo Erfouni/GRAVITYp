@@ -157,14 +157,6 @@ def compute_geodesic(b, co: BaseCompactObject,
     with ``scipy.integrate.odeint``, where the minus (plus) sign holds along
     the incoming (outgoing) leg. Points where the integration yields
     non-finite values, typically next to the turning point, are dropped.
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from gravityp import Schwarzschild, compute_geodesic
-    >>> rr, phi = compute_geodesic(6., Schwarzschild())
-    >>> print(round(phi[-1] / (2*np.pi), 2))  # number of turns
-    0.77
     """
     rmin = find_rmin(b, co)
     # We must ensure rmin > 0 in find_rmin for np.geomspace

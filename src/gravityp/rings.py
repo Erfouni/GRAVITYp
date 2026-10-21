@@ -226,18 +226,6 @@ def compute_optimal_array(bmin, bmax, rings, *, steps=None, Npoints=None,
     photon ring samples span both parts of each photon ring. The latter is the
     sampling required for the transfer functions, since a light ray crossing
     the disk several times contributes to all the lower orders as well.
-
-    Examples
-    --------
-    >>> from gravityp import compute_optimal_array
-    >>> rings = [{'retro_lensed': (5.02, 5.19), 'retro_p_ring': (5.19, 5.20),
-    ...           'p_ring': (5.20, 5.23), 'lensed': (5.23, 6.17)}]
-    >>> compute_optimal_array(0, 10, rings, steps=0.5).size
-    24
-    >>> bs_list = compute_optimal_array(0, 10, rings, Npoints=(100, 50, 20),
-    ...                                 joint=False, fill=True)
-    >>> [bs.size for bs in bs_list]
-    [100, 50, 20]
     """
     if steps is not None and Npoints is None:
         sample, params = np.arange, steps

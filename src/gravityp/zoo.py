@@ -27,13 +27,6 @@ class Schwarzschild(BaseCompactObject):
     See Also
     --------
     BaseCompactObject : Interface implemented by this class.
-
-    Examples
-    --------
-    >>> from gravityp import Schwarzschild
-    >>> bh = Schwarzschild()
-    >>> bh.r_phs, bh.inner_edge
-    ((3.0,), 2.0)
     """
 
     def __init__(self) -> None:
@@ -86,13 +79,6 @@ class SimpsonVisser(BaseCompactObject):
     ----------
     .. [1] A. Simpson and M. Visser, "Black-bounce to traversable wormhole",
        arXiv:1812.07114.
-
-    Examples
-    --------
-    >>> from gravityp import SimpsonVisser
-    >>> bb = SimpsonVisser(a=1.)
-    >>> print(round(bb.r_phs[0], 4), round(bb.inner_edge, 4))
-    2.8284 1.7321
     """
 
     def __init__(self, a: float) -> None:
@@ -187,15 +173,6 @@ class BardeenBH(BaseCompactObject):
     References
     ----------
     .. [1] J. M. Bardeen, in Proceedings of GR5, Tbilisi, USSR (1968), p. 174.
-
-    Examples
-    --------
-    A horizonless geometry that still has a photon sphere:
-
-    >>> from gravityp import BardeenBH
-    >>> obj = BardeenBH(q=0.8)
-    >>> print(round(obj.r_phs[0], 4), obj.inner_edge)
-    2.1983 0.0
     """
 
     Q_EXTREMAL = 4/(3*np.sqrt(3))
@@ -295,15 +272,6 @@ class BardeenBB(BaseCompactObject):
     References
     ----------
     .. [1] Eq. (72) in arXiv:2009.12057.
-
-    Examples
-    --------
-    A traversable wormhole with two photon spheres:
-
-    >>> from gravityp import BardeenBB
-    >>> wh = BardeenBB(a=0.8)
-    >>> print(wh.r_phs[0], round(wh.r_phs[1], 4))
-    0.0 2.3469
     """
 
     A_EXTREMAL = 4/(3*np.sqrt(3))
