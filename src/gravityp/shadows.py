@@ -8,18 +8,17 @@ from .compact_object import BaseCompactObject
 from .transfer_functions import transfer_function
 
 
-__all__ = ["redshift", "observed_intensity",
-           "total_intensity", "compute_points"]
+__all__ = ["observed_intensity", "total_intensity", "compute_points"]
 
 
-def redshift(r, co: BaseCompactObject):
+def _redshift(r, co: BaseCompactObject):
     """Gravitational redshift"""
     return np.sqrt(co.radial(r))
 
 
 def observed_intensity(eval_points, bs, rbs, emission_model,
                        co: BaseCompactObject):
-    intensity = emission_model(rbs)*redshift(rbs, co)**4
+    intensity = emission_model(rbs)*_redshift(rbs, co)**4
     return np.interp(eval_points, bs, intensity, left=0, right=0)
 
 

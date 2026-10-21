@@ -10,20 +10,15 @@ from bisect import bisect_right
 from .compact_object import BaseCompactObject
 
 
-__all__ = [
-    "find_interval",
-    "find_rmin",
-    "compute_outgoing",
-    "compute_geodesic",
-]
+__all__ = ["find_rmin", "compute_geodesic"]
 
 
-DEFAULT_NPOINTS = 100000  # ODE integration resolution
-DEFAULT_R0 = 1000.0  # Asymptotic boundary for initial conditions
-MINIMUM_R = 1e-6  # Minimum value of r for integration
+_DEFAULT_NPOINTS = 100000  # ODE integration resolution
+_DEFAULT_R0 = 1000.0  # Asymptotic boundary for initial conditions
+_MINIMUM_R = 1e-6  # Minimum value of r for integration
 
 
-def find_interval(inverse_b2, photon_sph, local_maxima, lower_bound=1e-4, upper_bound=100):
+def _find_interval(inverse_b2, photon_sph, local_maxima, lower_bound=1e-4, upper_bound=100):
     """Returns the bounds (r1,r2) where the rmin is found for a given 1/b^2"""
     # NOTE: photon_sph and local_maxima have to be ordered by co.potential_maxima
     if len(photon_sph) == 0 and len(local_maxima) == 0:  # Case 1: there is no local maximum
@@ -55,7 +50,7 @@ def find_rmin(b, co: BaseCompactObject):
     """
     photon_sph, local_maxima = co.potential_maxima
     # Interval for Brent's method
-    bounds = find_interval(1/b**2, photon_sph, local_maxima)
+    bounds = _find_interval(1/b**2, photon_sph, local_maxima)
 
     def fun(r):
         return co.potential(r)-1/b**2
@@ -63,10 +58,10 @@ def find_rmin(b, co: BaseCompactObject):
         root = 0
     else:
         root, _ = optimize.brentq(fun, *bounds, full_output=True)
-    return max(max(root, co.inner_edge), MINIMUM_R)
+    return max(max(root, co.inner_edge), _MINIMUM_R)
 
 
-def dphi_dr(phi, r, b, co: BaseCompactObject, incoming: bool = True):
+def _dphi_dr(phi, r, b, co: BaseCompactObject, incoming: bool = True):
     """Expression for dphi/dr in the null geodesic equation"""
     R = co.areal(r)  # Store value for single function call
     sign = -2*int(incoming)+1
@@ -74,22 +69,22 @@ def dphi_dr(phi, r, b, co: BaseCompactObject, incoming: bool = True):
 
 
 def _integrator(phi0, rr, b, co: BaseCompactObject, incoming: bool):
-    phi = integrate.odeint(dphi_dr, phi0, rr, (b, co, incoming)).reshape(-1,)
+    phi = integrate.odeint(_dphi_dr, phi0, rr, (b, co, incoming)).reshape(-1,)
     finite = np.isfinite(phi)  # Finite values mask
     return rr[finite], phi[finite]
 
 
-def compute_outgoing(r_phs, inner_edge, rmin) -> bool:
+def _compute_outgoing(r_phs, inner_edge, rmin) -> bool:
     """Decides whether to compute outgoing geodesic after reaching rmin"""
     if len(r_phs) == 0:  # There is no photon sphere
         return True
-    if min(r_phs) < MINIMUM_R:  # Innermost photon sphere very small
-        return rmin > MINIMUM_R  # Compute only if rmin is > MINIMUM_R
-    return (rmin > inner_edge) and (rmin > MINIMUM_R)
+    if min(r_phs) < _MINIMUM_R:  # Innermost photon sphere very small
+        return rmin > _MINIMUM_R  # Compute only if rmin is > _MINIMUM_R
+    return (rmin > inner_edge) and (rmin > _MINIMUM_R)
 
 
 def compute_geodesic(b, co: BaseCompactObject,
-                     Npoints=DEFAULT_NPOINTS, r0=DEFAULT_R0):
+                     Npoints=_DEFAULT_NPOINTS, r0=_DEFAULT_R0):
     """
     Computes null geodesics for a spacetime defined by a compact object
 
@@ -100,8 +95,8 @@ def compute_geodesic(b, co: BaseCompactObject,
     Parameters:
         b (float): Impact parameter in units of M=1
         co (BaseCompactObject): generic compact object defining the geometry
-        Npoints (int): Number of radial points for integration. Default: DEFAULT_NPOINTS
-        r0 (float): Starting radius. Default: DEFAULT_R0
+        Npoints (int): Number of radial points for integration. Default: 100000
+        r0 (float): Starting radius. Default: 1000.0
 
     Returns:
         tuple[np.ndarray, np.ndarray]: (rr, phi) where rr is the radial coordinate 
@@ -114,7 +109,7 @@ def compute_geodesic(b, co: BaseCompactObject,
     # phi0 = b/r0 is a good approximation for r0>>inner_edge
     rr, phi = _integrator(b/r0, rr_in, b, co, incoming=True)
 
-    if compute_outgoing(co.r_phs, co.inner_edge, rmin):
+    if _compute_outgoing(co.r_phs, co.inner_edge, rmin):
         # Linear approx. for next angle. Required for strict monotonicity!!
         phi0 = 2*phi[-1]-phi[-2]
         rr_out, phi_out = _integrator(phi0, rr[::-1], b, co, incoming=False)

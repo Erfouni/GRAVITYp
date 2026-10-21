@@ -15,6 +15,21 @@ from .emission_models import *
 from .shadows import *
 from .plots import *
 
+from . import (compact_object, zoo, geodesic_integration, ray_tracing, rings,
+               transfer_functions, emission_models, shadows, plots)
+
+# Written as `+=` statements so static analysers (e.g. Pylance) can follow them
+__all__ = []
+__all__ += compact_object.__all__
+__all__ += zoo.__all__
+__all__ += geodesic_integration.__all__
+__all__ += ray_tracing.__all__
+__all__ += rings.__all__
+__all__ += transfer_functions.__all__
+__all__ += emission_models.__all__
+__all__ += shadows.__all__
+__all__ += plots.__all__
+
 import email.utils
 from importlib.metadata import metadata, PackageNotFoundError
 

@@ -6,18 +6,12 @@ import numpy as np
 import scipy.optimize as optimize
 
 from .compact_object import BaseCompactObject
-from .ray_tracing import compute_nturns_scalar
+from .ray_tracing import _compute_nturns_scalar
 
-__all__ = [
-    "find_ring_edge",
-    "find_ring_bs",
-    "get_minima",
-    "find_rings_list",
-    "compute_optimal_array",
-]
+__all__ = ["find_rings_list", "compute_optimal_array"]
 
 
-def find_ring_edge(fun, lower_bound, upper_bound, to_upper=True) -> float:
+def _find_ring_edge(fun, lower_bound, upper_bound, to_upper=True) -> float:
     """Returns the impact parameter value for which the number of turns is 0.75 or 1.25 (depending on fun)"""
     b = (upper_bound+lower_bound)/2.
     if not to_upper:  # Bounds are reversed
@@ -39,7 +33,7 @@ def find_ring_edge(fun, lower_bound, upper_bound, to_upper=True) -> float:
             f'Invalid interval for ring edges. Iterations: {iter}')
 
 
-def find_ring_bs(b_crit, ring_interval, epsilon, scalar_fun_nturns):
+def _find_ring_bs(b_crit, ring_interval, epsilon, scalar_fun_nturns):
     """Returns the interval of impact parameters where lensed and photon rings
     are found around a single b_crit
     """
@@ -52,13 +46,13 @@ def find_ring_bs(b_crit, ring_interval, epsilon, scalar_fun_nturns):
 
     # retro
     bounds = (ring_interval[0], b_crit-epsilon)
-    retro_lensed = find_ring_edge(fun_lensed, *bounds, to_upper=True)
-    retro_p_ring = find_ring_edge(fun_p_ring, *bounds, to_upper=True)
+    retro_lensed = _find_ring_edge(fun_lensed, *bounds, to_upper=True)
+    retro_p_ring = _find_ring_edge(fun_p_ring, *bounds, to_upper=True)
 
     # non-retro
     bounds = (b_crit+epsilon, ring_interval[1])
-    lensed = find_ring_edge(fun_lensed, *bounds, to_upper=False)
-    p_ring = find_ring_edge(fun_p_ring, *bounds, to_upper=False)
+    lensed = _find_ring_edge(fun_lensed, *bounds, to_upper=False)
+    p_ring = _find_ring_edge(fun_p_ring, *bounds, to_upper=False)
 
     return {
         'retro_lensed': (retro_lensed, retro_p_ring),
@@ -68,7 +62,7 @@ def find_ring_bs(b_crit, ring_interval, epsilon, scalar_fun_nturns):
     }
 
 
-def get_minima(b_crits, epsilon, scalar_fun_nturns):
+def _get_minima(b_crits, epsilon, scalar_fun_nturns):
     """Returns the local minima of the nturns function between a list of critical impact parameters"""
     minima = []
     for i, b_crit in enumerate(b_crits[:-1]):
@@ -86,15 +80,15 @@ def find_rings_list(b_crits, co: BaseCompactObject, **geodesic_kwargs):
     max_value = max(b_crits) + 5
 
     def scalar_fun_nturns(b):
-        return compute_nturns_scalar(b, co, **geodesic_kwargs)
+        return _compute_nturns_scalar(b, co, **geodesic_kwargs)
 
     b_crits = sorted(b_crits)  # We ensure that they are in increasing order
-    minima = get_minima(b_crits, epsilon, scalar_fun_nturns)
+    minima = _get_minima(b_crits, epsilon, scalar_fun_nturns)
     rings = []
     for i, b_crit in enumerate(b_crits):
         a = epsilon if i == 0 else minima[i-1]
         b = max_value if i == len(b_crits)-1 else minima[i]
-        rings.append(find_ring_bs(b_crit, (a, b), epsilon, scalar_fun_nturns))
+        rings.append(_find_ring_bs(b_crit, (a, b), epsilon, scalar_fun_nturns))
     return rings
 
 
