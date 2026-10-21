@@ -1,6 +1,4 @@
-"""This module contains very helpful builtin functions for finding relevant
-impact parameter values.
-"""
+"""Impact parameters of the lensed and photon rings."""
 
 import numpy as np
 import scipy.optimize as optimize
@@ -75,7 +73,67 @@ def _get_minima(b_crits, epsilon, scalar_fun_nturns):
 
 
 def find_rings_list(b_crits, co: BaseCompactObject, **geodesic_kwargs):
-    """Returns a list with all impact parameter intervals for each ring and for each b_crit"""
+    r"""Intervals of impact parameters of the lensed and photon rings.
+
+    Around each critical impact parameter :math:`b_c`, the number of turns
+    :math:`n(b)` of the light rays diverges. The lensed rings correspond to
+    :math:`3/4 < n \leq 5/4` and the photon rings to :math:`n > 5/4`, each of
+    them having an inner (:math:`b < b_c`) and an outer (:math:`b > b_c`) part.
+
+    Parameters
+    ----------
+    b_crits : sequence of float
+        Critical impact parameters :math:`b_c = V_{max}^{-1/2}` of the photon
+        spheres, in any order.
+    co : BaseCompactObject
+        Compact object defining the geometry.
+
+    Returns
+    -------
+    list of dict
+        One dictionary per critical impact parameter, sorted in increasing
+        order of :math:`b_c`. Each one maps the following keys to intervals
+        ``(start, stop)`` of impact parameters:
+
+        - ``'retro_lensed'``: inner part of the lensed ring.
+        - ``'retro_p_ring'``: inner part of the photon ring, up to :math:`b_c`.
+        - ``'p_ring'``: outer part of the photon ring, from :math:`b_c`.
+        - ``'lensed'``: outer part of the lensed ring.
+
+    Other Parameters
+    ----------------
+    **geodesic_kwargs
+        Keyword arguments passed to `gravityp.compute_geodesic`, such as
+        `Npoints` or `r0`.
+
+    Raises
+    ------
+    ValueError
+        If the edge of a ring cannot be found.
+
+    See Also
+    --------
+    compute_optimal_array : Sample impact parameters around the rings.
+    gravityp.compute_nturns : Number of turns of light rays.
+
+    Notes
+    -----
+    Each ring is searched between the minima of :math:`n(b)` that separate
+    consecutive critical impact parameters, from :math:`b \approx 0` for the
+    first one up to ``max(b_crits) + 5`` for the last one.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gravityp import Schwarzschild, find_rings_list
+    >>> bh = Schwarzschild()
+    >>> b_crits = 1 / np.sqrt(bh.potential_maxima[1])  # [sqrt(27)]
+    >>> rings = find_rings_list(b_crits, bh)
+    >>> len(rings), list(rings[0])
+    (1, ['retro_lensed', 'retro_p_ring', 'p_ring', 'lensed'])
+    >>> print(np.round(rings[0]['p_ring'], 2))
+    [5.2  5.23]
+    """
     epsilon = 1e-11  # Maybe toooo small
     max_value = max(b_crits) + 5
 
@@ -116,17 +174,70 @@ def _ring_intervals(bmin, bmax, rings, fill):
 
 def compute_optimal_array(bmin, bmax, rings, *, steps=None, Npoints=None,
                           joint=True, fill=False):
-    """
-    Sample impact parameters around the rings, either with fixed step sizes
-    (steps) or with a fixed number of points per interval (Npoints).
-    Exactly one of them must be given. Each one is either a scalar or a triplet
-    (direct, lensed, photon ring), e.g. steps=(0.1, 0.01, 0.001).
-    If joint=True (default), direct, lensed and photon ring contributions are
-    returned in an ordered single array.
-    If joint=False, these three contributions are returned as a triplet:
-    ( bs_direct, bs_lensed, bs_p_ring )
-    If fill=True, each contribution is sampled over a single interval covering
-    all of its regions instead of only within them.
+    """Sample impact parameters around the lensed and photon rings.
+
+    The direct, lensed and photon ring contributions are sampled separately,
+    either with fixed step sizes (`steps`) or with a fixed number of points per
+    interval (`Npoints`), so the narrow rings can be sampled more densely.
+
+    Parameters
+    ----------
+    bmin, bmax : float
+        Range of impact parameters, in units of M.
+    rings : list of dict
+        Ring intervals, as returned by `find_rings_list`.
+    steps : float or sequence of 3 floats, optional
+        Step size of the samples, either common to all contributions or given
+        as ``(direct, lensed, photon ring)``, e.g. ``(0.1, 0.01, 0.001)``.
+    Npoints : int or sequence of 3 ints, optional
+        Number of samples per interval, either common to all contributions or
+        given as ``(direct, lensed, photon ring)``.
+    joint : bool, optional
+        If True (default), return all contributions in a single array.
+        Otherwise, return them separately.
+    fill : bool, optional
+        If True, sample each contribution over a single interval covering all
+        of its regions. If False (default), sample only within them.
+
+    Returns
+    -------
+    ndarray or list of ndarray
+        If `joint` is True, sorted array with all the samples between `bmin`
+        and `bmax`. Otherwise, list ``[bs_direct, bs_lensed, bs_p_ring]``.
+
+    Raises
+    ------
+    ValueError
+        If not exactly one of `steps` and `Npoints` is given.
+
+    See Also
+    --------
+    find_rings_list : Intervals of the lensed and photon rings.
+    gravityp.total_intensity : Observed intensity, which takes the samples
+        returned with ``joint=False`` and ``fill=True``.
+
+    Notes
+    -----
+    With ``fill=False``, the impact parameters are split by image type: direct
+    samples lie outside the rings, while lensed and photon ring samples lie in
+    the inner and outer parts of their rings. With ``fill=True``, direct
+    samples cover the whole range ``[bmin, bmax]``, lensed samples span from
+    the inner to the outer edge of each lensed ring (photon ring included), and
+    photon ring samples span both parts of each photon ring. The latter is the
+    sampling required for the transfer functions, since a light ray crossing
+    the disk several times contributes to all the lower orders as well.
+
+    Examples
+    --------
+    >>> from gravityp import compute_optimal_array
+    >>> rings = [{'retro_lensed': (5.02, 5.19), 'retro_p_ring': (5.19, 5.20),
+    ...           'p_ring': (5.20, 5.23), 'lensed': (5.23, 6.17)}]
+    >>> compute_optimal_array(0, 10, rings, steps=0.5).size
+    24
+    >>> bs_list = compute_optimal_array(0, 10, rings, Npoints=(100, 50, 20),
+    ...                                 joint=False, fill=True)
+    >>> [bs.size for bs in bs_list]
+    [100, 50, 20]
     """
     if steps is not None and Npoints is None:
         sample, params = np.arange, steps
