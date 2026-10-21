@@ -1,5 +1,9 @@
-"""This module contains all the functions needed for the geodesic integration
-routine
+"""Integration of null geodesics (light rays) in a compact object geometry.
+
+Light rays are sent from a distant observer with a given impact parameter `b`
+and integrated in the equatorial plane, as the azimuthal angle `phi` along the
+radial coordinate `r`. `find_rmin` locates their turning point, and
+`compute_geodesic` traces the full trajectory.
 """
 
 import numpy as np
@@ -37,16 +41,42 @@ def _find_interval(inverse_b2, photon_sph, local_maxima, lower_bound=1e-4, upper
 
 
 def find_rmin(b, co: BaseCompactObject):
-    """
-    Finds the minimum radius of the trajectory using Brent's method. 
+    """Minimum radius reached by a light ray with impact parameter `b`.
 
-    Parameters:
-        b (float): impact parameter of the photon trajectory
-        co (BaseCompactObject): generic compact object defining the geometry
+    Parameters
+    ----------
+    b : float
+        Impact parameter of the light ray, in units of M.
+    co : BaseCompactObject
+        Compact object defining the geometry.
 
-    Returns:
-        i)  If b > bmin, then rmin is found by solving V(r)-1/b^2 = 0
-        ii) If b < bmin, then rmin = inner_edge.
+    Returns
+    -------
+    float
+        Turning point of the ray, i.e. the root of :math:`V(r) = 1/b^2` found
+        with Brent's method, if the ray is scattered. Otherwise the ray is
+        captured and its inner edge `co.inner_edge` is returned.
+
+    See Also
+    --------
+    compute_geodesic : Full trajectory of the light ray.
+    BaseCompactObject.potential : Effective potential :math:`V(r)`.
+
+    Notes
+    -----
+    The root is searched between the photon spheres of
+    `co.potential_maxima` that enclose :math:`1/b^2`. The result is never
+    smaller than `co.inner_edge`, nor than a small positive cutoff (1e-6)
+    that keeps the radial grid of `compute_geodesic` well defined.
+
+    Examples
+    --------
+    >>> from gravityp import Schwarzschild, find_rmin
+    >>> bh = Schwarzschild()
+    >>> print(round(find_rmin(6., bh), 4))  # scattered ray
+    4.4534
+    >>> find_rmin(3., bh)  # captured ray, b < sqrt(27)
+    2.0
     """
     photon_sph, local_maxima = co.potential_maxima
     # Interval for Brent's method
@@ -69,6 +99,7 @@ def _dphi_dr(phi, r, b, co: BaseCompactObject, incoming: bool = True):
 
 
 def _integrator(phi0, rr, b, co: BaseCompactObject, incoming: bool):
+    """Integrates phi(r) over the grid rr, dropping non-finite values"""
     phi = integrate.odeint(_dphi_dr, phi0, rr, (b, co, incoming)).reshape(-1,)
     finite = np.isfinite(phi)  # Finite values mask
     return rr[finite], phi[finite]
@@ -85,22 +116,61 @@ def _compute_outgoing(r_phs, inner_edge, rmin) -> bool:
 
 def compute_geodesic(b, co: BaseCompactObject,
                      Npoints=_DEFAULT_NPOINTS, r0=_DEFAULT_R0):
-    """
-    Computes null geodesics for a spacetime defined by a compact object
+    r"""Trajectory of a light ray with impact parameter `b`.
 
-    Integrates the geodesic equations to trace light ray paths. For incoming rays,
-    integrates from r0 down to rmin. For rays escaping to infinity (rmin > r_ph),
-    also integrates the outgoing trajectory from rmin back to r0.
+    The ray is integrated inwards from `r0` down to its minimum radius
+    (see `find_rmin`). If the ray is scattered, the outgoing leg from the
+    minimum radius back to `r0` is integrated as well. Captured rays end at the
+    inner edge of `co`.
 
-    Parameters:
-        b (float): Impact parameter in units of M=1
-        co (BaseCompactObject): generic compact object defining the geometry
-        Npoints (int): Number of radial points for integration. Default: 100000
-        r0 (float): Starting radius. Default: 1000.0
+    Parameters
+    ----------
+    b : float
+        Impact parameter of the light ray, in units of M.
+    co : BaseCompactObject
+        Compact object defining the geometry.
+    Npoints : int, optional
+        Number of radial points of each leg, logarithmically spaced. Default
+        is 100000.
+    r0 : float, optional
+        Initial radius, which should lie far from the compact object. Default
+        is 1000.
 
-    Returns:
-        tuple[np.ndarray, np.ndarray]: (rr, phi) where rr is the radial coordinate 
-            array and phi is the azimuthal angle array along the geodesic
+    Returns
+    -------
+    rr : ndarray
+        Radial coordinate along the trajectory, with ``Npoints`` (captured
+        rays) or ``2*Npoints`` (scattered rays) elements at most.
+    phi : ndarray
+        Azimuthal angle along the trajectory, with the same shape as `rr`.
+        It starts at ``b/r0`` and grows monotonically in absolute value, so
+        ``abs(phi[-1])`` is the total deflection of the ray.
+
+    See Also
+    --------
+    find_rmin : Minimum radius of the light ray.
+    gravityp.compute_nturns : Number of turns of the light rays.
+    gravityp.transfer_function : Radii where light rays cross the disk.
+
+    Notes
+    -----
+    The trajectory is obtained by integrating the orbit equation
+
+    .. math::
+
+        \frac{d\phi}{dr} = \mp \frac{b}{\sqrt{R(r)}\sqrt{R(r) - b^2 A(r)}}
+
+    with ``scipy.integrate.odeint``, where the minus (plus) sign holds along
+    the incoming (outgoing) leg. Points where the integration yields
+    non-finite values, typically next to the turning point, are dropped.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gravityp import Schwarzschild, compute_geodesic
+    >>> rr, phi = compute_geodesic(6., Schwarzschild())
+    >>> print(round(phi[-1] / (2*np.pi), 2))  # number of turns
+    0.77
     """
     rmin = find_rmin(b, co)
     # We must ensure rmin > 0 in find_rmin for np.geomspace
