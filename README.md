@@ -54,6 +54,7 @@ After this setup, adding a notebook with `git add` strips its outputs and metada
 
 ```python
 import numpy as np
+import matplotlib.pyplot as plt
 from gravityp import CompactObject, make_geodesics_plot
 
 def g_rr(r: float) -> float:
@@ -73,7 +74,8 @@ schwarzschild = CompactObject(
 
 # Array of impact parameters from 0M to 10M
 impact_parameters = np.arange(0, 10, 0.2)
-make_geodesics_plot(impact_parameters, schwarzschild, figsize=(4, 4))
+fig, ax = make_geodesics_plot(impact_parameters, schwarzschild, figsize=(4, 4))
+plt.show()
 ```
 
 The output image looks like this:
