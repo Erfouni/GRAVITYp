@@ -1,8 +1,12 @@
 """Plots of each step of the ray-tracing pipeline."""
 
 import numpy as np
+from collections.abc import Callable, Iterable, Sequence
+from numpy.typing import ArrayLike
 
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from matplotlib.patches import Circle
 from matplotlib import colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -25,7 +29,7 @@ __all__ = [
 ]
 
 
-def _get_fig_ax(ax, figsize):
+def _get_fig_ax(ax, figsize) -> tuple[Figure, Axes]:
     """Returns the figure and axes to draw on, creating them if ax is None"""
     if ax is None:
         return plt.subplots(figsize=figsize)
@@ -37,7 +41,11 @@ def _plot_metric_function(ax, r_range, fun, param, name):
     ax.plot(r_range, fun(r_range, param), label=f'{name}={param:.2f}')
 
 
-def make_metric_function_plot(fun, params, r_range, figsize=(9, 6), ax=None):
+def make_metric_function_plot(fun: Callable,
+                              params: dict[str, Iterable[float]],
+                              r_range: np.ndarray,
+                              figsize: tuple[float, float] = (9, 6),
+                              ax: Axes | None = None) -> tuple[Figure, Axes]:
     """Plot a metric function for several values of its parameter.
 
     Parameters
@@ -113,8 +121,10 @@ def _plot_half_graph(ax, bs, co: BaseCompactObject, plot_label=False,
         ax.plot(bs, y_data, **plot_kwargs)
 
 
-def plot_nturns(bs, b_crits, co: BaseCompactObject, figsize=(7, 7), ax=None,
-                **geodesic_kwargs):
+def plot_nturns(bs: np.ndarray, b_crits: Sequence[float] | np.ndarray,
+                co: BaseCompactObject, figsize: tuple[float, float] = (7, 7),
+                ax: Axes | None = None, **geodesic_kwargs
+                ) -> tuple[Figure, Axes]:
     """Plot the number of turns of light rays against their impact parameter.
 
     The curve is coloured by image type: direct (black), lensed (orange) and
@@ -230,8 +240,10 @@ def _plot_BH(axes, co: BaseCompactObject):
         axes.add_patch(photon_ring)
 
 
-def make_geodesics_plot(bs_dict, co: BaseCompactObject, figsize=(7, 7),
-                        ax=None, **geodesic_kwargs):
+def make_geodesics_plot(bs_dict: ArrayLike | dict, co: BaseCompactObject,
+                        figsize: tuple[float, float] = (7, 7),
+                        ax: Axes | None = None, **geodesic_kwargs
+                        ) -> tuple[Figure, Axes]:
     r"""Plot the trajectories of light rays around a compact object.
 
     The trajectories are drawn in the plane of motion, taking the areal radius
@@ -279,7 +291,7 @@ def make_geodesics_plot(bs_dict, co: BaseCompactObject, figsize=(7, 7),
     """
     fig, ax = _get_fig_ax(ax, figsize)
 
-    if bs_dict.__class__ != dict:
+    if not isinstance(bs_dict, dict):
         bs_dict = {'label': (None, bs_dict)}  # Cast to dict
     for label, (color, bs) in bs_dict.items():
         for b in np.atleast_1d(bs):
@@ -298,8 +310,8 @@ def make_geodesics_plot(bs_dict, co: BaseCompactObject, figsize=(7, 7),
 
 
 def _plot_transfer_function(axes, bs, order, co: BaseCompactObject,
-                            correction=0, **geodesic_kwargs):
-    """Plots the transfer function of the given order, labelled by image type"""
+                            correction : float = 0, **geodesic_kwargs):
+    """Plots the transfer function of the given order"""
     # NOTE: bs in bs_list can also be lists for lensed and photon ring, which
     # will be plotted separately
     order_colors = ['dodgerblue', 'orange', 'red']
@@ -309,9 +321,12 @@ def _plot_transfer_function(axes, bs, order, co: BaseCompactObject,
               label=f'{image[order]}', linewidth=1)
 
 
-def make_transfer_function_plot(b_crits, co: BaseCompactObject, bs_list,
-                                correction=0, figsize=(7, 7), ax=None,
-                                **geodesic_kwargs):
+def make_transfer_function_plot(b_crits: Sequence[float] | np.ndarray,
+                                co: BaseCompactObject, bs_list: Sequence,
+                                correction: float = 0,
+                                figsize: tuple[float, float] = (7, 7),
+                                ax: Axes | None = None, **geodesic_kwargs
+                                ) -> tuple[Figure, Axes]:
     """Plot the transfer functions of each order.
 
     The curves are coloured and labelled by image type: direct (blue), lensed
@@ -387,7 +402,8 @@ def make_transfer_function_plot(b_crits, co: BaseCompactObject, bs_list,
 # Intensity and shadows
 
 
-def _add_extra_tick(xticks, xticklabels, extra_tick=None, extra_ticklabel=None):
+def _add_extra_tick(xticks, xticklabels, extra_tick = None,
+                    extra_ticklabel = None):
     """Adds a labelled tick, removing the regular ticks too close to it"""
     if (extra_tick is not None) and (extra_ticklabel is not None):
         threshold = 0.6  # Minimum allowed distance between labels
@@ -398,8 +414,12 @@ def _add_extra_tick(xticks, xticklabels, extra_tick=None, extra_ticklabel=None):
     return xticks, xticklabels
 
 
-def plot_emission_model(rs, emission_model, text_string=None,
-                        tick=None, ticklabel=None, figsize=(7, 7), ax=None):
+def plot_emission_model(rs: np.ndarray, emission_model: Callable,
+                        text_string: str | None = None,
+                        tick: float | None = None,
+                        ticklabel: str | None = None,
+                        figsize: tuple[float, float] = (7, 7),
+                        ax: Axes | None = None) -> tuple[Figure, Axes]:
     """Plot an emission profile of the accretion disk.
 
     Parameters
@@ -458,9 +478,13 @@ def plot_emission_model(rs, emission_model, text_string=None,
     return fig, ax
 
 
-def plot_observed_intensity(bs, bs_transfer_list, emission_model,
-                            co: BaseCompactObject, figsize=(7, 7), ax=None,
-                            y_range=None, **geodesic_kwargs):
+def plot_observed_intensity(bs: np.ndarray,
+                            bs_transfer_list: Sequence[np.ndarray],
+                            emission_model: Callable, co: BaseCompactObject,
+                            figsize: tuple[float, float] = (7, 7),
+                            ax: Axes | None = None,
+                            y_range: tuple[float, float] | None = None,
+                            **geodesic_kwargs) -> tuple[Figure, Axes]:
     """Plot the observed intensity profile of a face-on accretion disk.
 
     Parameters
@@ -536,9 +560,13 @@ def _plot_colorbar(fig, ax, im):
     return fig.colorbar(im, cax=cax)
 
 
-def make_shadow_plot(bs_transfer_list, emission_model, co: BaseCompactObject,
-                     figsize=(7, 7), ax=None, y_range=None, Npixels=1e6,
-                     **geodesic_kwargs):
+def make_shadow_plot(bs_transfer_list: Sequence[np.ndarray],
+                     emission_model: Callable, co: BaseCompactObject,
+                     figsize: tuple[float, float] = (7, 7),
+                     ax: Axes | None = None,
+                     y_range: tuple[float, float] | None = None,
+                     Npixels: float = 1e6, **geodesic_kwargs
+                     ) -> tuple[Figure, Axes]:
     """Plot the image of a compact object surrounded by a face-on disk.
 
     The observed intensity is shown on the observer's screen, covering
