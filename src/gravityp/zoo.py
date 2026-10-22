@@ -1,4 +1,4 @@
-"""Module containing predefined classes of different compact objects"""
+"""Predefined compact objects."""
 
 import numpy as np
 import scipy.optimize as optimize
@@ -12,11 +12,21 @@ __all__ = ["Schwarzschild", "SimpsonVisser", "BardeenBH", "BardeenBB"]
 
 
 class Schwarzschild(BaseCompactObject):
-    """Schwarzschild black hole in units of M=1. The metric reads:
+    r"""Schwarzschild black hole, in units of M=1.
 
-    ds^2 = -A(r) dt^2 + 1/A(r) dr^2 + R(r) dOmega^2
+    The metric functions are
 
-    with A(r)=1-2/r and R(r)=r^2 .
+    .. math::
+
+        A(r) = 1 - \frac{2}{r}, \qquad R(r) = r^2.
+
+    The photon sphere lies at :math:`r = 3`, with critical impact parameter
+    :math:`b_c = \sqrt{27}`, and the inner edge is the event horizon at
+    :math:`r = 2`.
+
+    See Also
+    --------
+    BaseCompactObject : Interface implemented by this class.
     """
 
     def __init__(self) -> None:
@@ -33,20 +43,42 @@ class Schwarzschild(BaseCompactObject):
 
 
 class SimpsonVisser(BaseCompactObject):
-    """Simpson-Visser metric in units of M=1.
+    r"""Simpson-Visser geometry, in units of M=1.
 
-    It describes regular geometries (for `a>0`) and it reads:
+    Regular geometry for :math:`a > 0`, with metric functions
 
-    ds^2 = -A(r) dt^2 + 1/A(r) dr^2 + R(r) dOmega^2
+    .. math::
 
-    with A(r)=1-2/√R(r) and R(r)=r^2+a^2 . For more information, see
-    <https://arxiv.org/abs/1812.07114>.
+        A(r) = 1 - \frac{2}{\sqrt{r^2 + a^2}}, \qquad R(r) = r^2 + a^2.
 
-    Parameters:
-        a (float): continuous parameter interpolating between Schwarzschild
-            black hole (`a = 0`), a *black bounce* (`0 < a < 2`), a one-way wormhole
-            with an extremal null throat (`a = 2`) and a two-way traversable
-            wormhole (`a > 2`).
+    Parameters
+    ----------
+    a : float
+        Non-negative bounce parameter, interpolating between the
+        Schwarzschild black hole (``a = 0``), a *black bounce*
+        (``0 < a < 2``), a one-way wormhole with an extremal null throat
+        (``a = 2``) and a two-way traversable wormhole (``a > 2``).
+
+    Raises
+    ------
+    ValueError
+        If `a` is negative.
+
+    See Also
+    --------
+    BardeenBB : Bardeen-like black bounce.
+
+    Notes
+    -----
+    The inner edge is the event horizon :math:`r = \sqrt{4 - a^2}` for
+    :math:`a < 2`, and the throat :math:`r = 0` otherwise. The photon sphere
+    lies at :math:`r = \sqrt{9 - a^2}` for :math:`a < 3`, and at the throat
+    otherwise.
+
+    References
+    ----------
+    .. [1] A. Simpson and M. Visser, "Black-bounce to traversable wormhole",
+       arXiv:1812.07114.
     """
 
     def __init__(self, a: float) -> None:
@@ -60,7 +92,7 @@ class SimpsonVisser(BaseCompactObject):
 
     @property
     def a(self) -> float:
-        """Bounce parameter"""
+        """Bounce parameter (read-only)."""
         return self._a
 
     def radial(self, r: float | np.ndarray) -> float | np.ndarray:
@@ -98,26 +130,53 @@ def _general_cubic_root(a: float, b: float, c: float, d: float) -> float:
     
 
 class BardeenBH(BaseCompactObject):
-    """Non-rotating Bardeen regular black hole in units of M=1:
+    r"""Non-rotating Bardeen regular black hole, in units of M=1.
 
-    ds^2 = -A(r) dt^2 + 1/A(r) dr^2 + r^2 dOmega^2
+    The metric functions are
 
-    with A(r)=1-2r^2/(r^2+q^2)^(3/2) . For more information, see
-    (J. M. Bardeen, 1968).
+    .. math::
 
-    Parameters:
-        q (float): continuous parameter interpolating between Schwarzschild
-            black hole (`q = 0`), a regular black hole (`0 < q < 4/(3√3)`), an
-            extremal regular black hole (`q = 4/(3√3)`) and a regular,
-            horizonless geometry (`q > 4/(3√3)`). This metric presents a single
-            photon sphere for `0 <= q < 48/(25√5)` and no photon sphere for
-            `q >= 48/(25√5)`.
+        A(r) = 1 - \frac{2 r^2}{(r^2 + q^2)^{3/2}}, \qquad R(r) = r^2.
+
+    Parameters
+    ----------
+    q : float
+        Non-negative regularisation parameter, interpolating between the
+        Schwarzschild black hole (``q = 0``), a regular black hole
+        (``0 < q < Q_EXTREMAL``), an extremal regular black hole
+        (``q = Q_EXTREMAL``) and a regular, horizonless geometry
+        (``q > Q_EXTREMAL``).
+
+    Attributes
+    ----------
+    Q_EXTREMAL : float
+        Extremal value :math:`4/(3\sqrt{3})`: horizons exist only for
+        ``q <= Q_EXTREMAL``.
+    Q_PHOTON_SPHERE : float
+        Critical value :math:`48/(25\sqrt{5})`: there is a single photon sphere
+        for ``q < Q_PHOTON_SPHERE`` and none otherwise.
+
+    Raises
+    ------
+    ValueError
+        If `q` is negative.
+
+    See Also
+    --------
+    BardeenBB : Bardeen-like black bounce.
+
+    Notes
+    -----
+    The inner edge is the outer event horizon for ``q <= Q_EXTREMAL``, and
+    :math:`r = 0` for horizonless geometries.
+
+    References
+    ----------
+    .. [1] J. M. Bardeen, in Proceedings of GR5, Tbilisi, USSR (1968), p. 174.
     """
 
     Q_EXTREMAL = 4/(3*np.sqrt(3))
-    """Extremal value of q: horizons exist only for q <= Q_EXTREMAL"""
     Q_PHOTON_SPHERE = 48/(25*np.sqrt(5))
-    """Critical value of q: photon spheres exist only for q < Q_PHOTON_SPHERE"""
 
     def __init__(self, q: float) -> None:
         if q < 0:
@@ -156,7 +215,7 @@ class BardeenBH(BaseCompactObject):
 
     @property
     def q(self) -> float:
-        """Regularisation parameter"""
+        """Regularisation parameter (read-only)."""
         return self._q
 
     def radial(self, r: float | np.ndarray) -> float | np.ndarray:
@@ -167,26 +226,56 @@ class BardeenBH(BaseCompactObject):
 
 
 class BardeenBB(BaseCompactObject):
-    """Non-rotating Bardeen-like *black bounce* in units of M=1:
+    r"""Non-rotating Bardeen-like *black bounce*, in units of M=1.
 
-    ds^2 = -A(r) dt^2 + 1/A(r) dr^2 + R(r) dOmega^2
+    The metric functions are
 
-    with A(r)=1-2r^2/(r^2+a^2)^(3/2) and R(r) = r^2+a^2 .
-    For more information, see Eq. (72) in <https://arxiv.org/abs/2009.12057>.
+    .. math::
 
-    Parameters:
-        a (float): bouncing parameter interpolating between Schwarzschild
-            black hole (`a = 0`), a *black bounce* (`0 < a < 4/(3√3)`), an extremal
-            *black bounce* (`a = 4/(3√3)`) and a traversable wormhole
-            (`a > 4/(3√3)`). This metric presents a single photon sphere for
-            `0 <= a <= 4/(3√3)`, two photon spheres for `4/(3√3) < a < 2/√5` and
-            again a single photon sphere for `a >= 2/√5`.
+        A(r) = 1 - \frac{2 r^2}{(r^2 + a^2)^{3/2}}, \qquad R(r) = r^2 + a^2.
+
+    Parameters
+    ----------
+    a : float
+        Non-negative bounce parameter, interpolating between the
+        Schwarzschild black hole (``a = 0``), a *black bounce*
+        (``0 < a < A_EXTREMAL``), an extremal *black bounce*
+        (``a = A_EXTREMAL``) and a traversable wormhole (``a > A_EXTREMAL``).
+
+    Attributes
+    ----------
+    A_EXTREMAL : float
+        Extremal value :math:`4/(3\sqrt{3})`: horizons exist only for
+        ``a <= A_EXTREMAL``.
+    A_PHOTON_SPHERE : float
+        Critical value :math:`2/\sqrt{5}`: the outer photon sphere exists only
+        for ``a < A_PHOTON_SPHERE``.
+
+    Raises
+    ------
+    ValueError
+        If `a` is negative.
+
+    See Also
+    --------
+    BardeenBH : Bardeen regular black hole.
+    SimpsonVisser : Simpson-Visser black bounce.
+
+    Notes
+    -----
+    The inner edge is the outer event horizon for ``a <= A_EXTREMAL``, and the
+    throat :math:`r = 0` otherwise. There is a single photon sphere for
+    ``a <= A_EXTREMAL``, two of them (the throat and an outer one) for
+    ``A_EXTREMAL < a < A_PHOTON_SPHERE``, and only the throat for
+    ``a >= A_PHOTON_SPHERE``.
+
+    References
+    ----------
+    .. [1] Eq. (72) in arXiv:2009.12057.
     """
 
     A_EXTREMAL = 4/(3*np.sqrt(3))
-    """Extremal value of a: horizons exist only for a <= A_EXTREMAL"""
     A_PHOTON_SPHERE = 2/np.sqrt(5)
-    """Critical value of a: outer photon sphere exists only for a < A_PHOTON_SPHERE"""
 
     def __init__(self, a: float) -> None:
         if a < 0:
@@ -226,7 +315,7 @@ class BardeenBB(BaseCompactObject):
 
     @property
     def a(self) -> float:
-        """Bounce parameter"""
+        """Bounce parameter (read-only)."""
         return self._a
 
     def radial(self, r: float | np.ndarray) -> float | np.ndarray:
