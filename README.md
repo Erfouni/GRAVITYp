@@ -25,7 +25,7 @@ pip install gravityp
 
 ### From source
 
-Alternatively, you can [fork this repository](https://github.com/alvaroslzar/GRAVITYp/fork) and clone it locally in editable mode for research and development
+Alternatively, you can [fork this repository](https://github.com/alvaroslzar/GRAVITYp/fork) and clone it locally and install it in editable mode for research and development
 
 ```bash
 git clone git@github.com:<YOUR_USERNAME>/GRAVITYp.git       # SSH

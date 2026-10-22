@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,30 +8,29 @@ version = "0.1.3"
 authors = [
   { name="Alvaro Salazar-Cuadros", email="a.salazar@uva.es" },
   { name="Diego Saez-Chillon Gomez", email="diego.saez@uva.es" },
-
 ]
 description = "GRAVITYp is a Python library to study the optical appearance of spherically symmetric compact objects in General Relativity. It stands for Geodesic RAys and Visualization of IntensiTY profiles."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "numpy>=1.26",
-    "scipy>=1.11",
+    "scipy>=1.11.2",
     "matplotlib>=3.8",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Physics",
 ]
 license = "MIT"
-license-files = ["LICEN[CS]E*"]
 
 [project.optional-dependencies]
-notebooks = [
-    "jupyter>=1.0",
-    "ipykernel>=6.0",
-    "nbconvert>=7.0",
-]
+notebooks = ["jupyter"]
 
 [project.urls]
 Homepage = "https://github.com/alvaroslzar/GRAVITYp"
 Issues = "https://github.com/alvaroslzar/GRAVITYp/issues"
+
+[dependency-groups]
+test = ["pytest>=8"]
