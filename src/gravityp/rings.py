@@ -3,6 +3,7 @@
 import numpy as np
 import scipy.optimize as optimize
 from collections.abc import Iterable, Sequence
+from typing import Literal, overload
 
 from .compact_object import BaseCompactObject
 from .ray_tracing import _compute_nturns_scalar
@@ -172,6 +173,22 @@ def _ring_intervals(bmin, bmax, rings, fill):
         p_ring = [ring[key]
                   for ring in rings for key in ("retro_p_ring", "p_ring")]
     return direct, lensed, p_ring
+
+
+@overload
+def compute_optimal_array(bmin: float, bmax: float, rings: list[dict], *,
+                          steps: float | Sequence[float] | None = ...,
+                          Npoints: int | Sequence[int] | None = ...,
+                          joint: Literal[True] = ..., fill: bool = ...
+                          ) -> np.ndarray: ...
+
+
+@overload
+def compute_optimal_array(bmin: float, bmax: float, rings: list[dict], *,
+                          steps: float | Sequence[float] | None = ...,
+                          Npoints: int | Sequence[int] | None = ...,
+                          joint: Literal[False], fill: bool = ...
+                          ) -> list[np.ndarray]: ...
 
 
 def compute_optimal_array(bmin: float, bmax: float, rings: list[dict], *,
