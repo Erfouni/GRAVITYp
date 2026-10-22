@@ -17,14 +17,17 @@ __all__ = [
 
 
 def intensity_at_ISCO(r, r_ISCO):
+    r = np.asarray(r, dtype=float)
     func = lambda x: (1./(x-(r_ISCO-1))**2) / (1./(r_ISCO-(r_ISCO-1))**2)
     return np.piecewise(r, [r>=r_ISCO,r<r_ISCO] , [func,0] )
 
 def intensity_at_photon_ring(r, r_ph):
+    r = np.asarray(r, dtype=float)
     func = lambda x: (1./(x-(r_ph-1))**3) / (1./(r_ph-(r_ph-1))**3)
     return np.piecewise(r, [r>=r_ph,r<r_ph] , [func,0] )
 
 def intensity_at_inner_edge(r, inner_edge):
+    r = np.asarray(r, dtype=float)
     func = lambda x: ( np.pi/2-np.arctan(x-5) ) / ( np.pi/2-np.arctan(inner_edge-5) )
     return np.piecewise(r, [r>=inner_edge,r<inner_edge] , [func,0] )
 
