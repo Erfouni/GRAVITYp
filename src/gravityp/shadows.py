@@ -1,6 +1,7 @@
 """Observed intensity and optical appearance of compact objects."""
 
 import numpy as np
+from collections.abc import Callable, Sequence
 
 from .compact_object import BaseCompactObject
 from .transfer_functions import transfer_function
@@ -14,8 +15,9 @@ def _redshift(r, co: BaseCompactObject):
     return np.sqrt(co.radial(r))
 
 
-def observed_intensity(eval_points, bs, rbs, emission_model,
-                       co: BaseCompactObject):
+def observed_intensity(eval_points: np.ndarray, bs: np.ndarray,
+                       rbs: np.ndarray, emission_model: Callable,
+                       co: BaseCompactObject) -> np.ndarray:
     r"""Observed intensity contributed by a single transfer function.
 
     The intensity emitted at the crossing radii :math:`r_m(b)` is redshifted
@@ -50,8 +52,9 @@ def observed_intensity(eval_points, bs, rbs, emission_model,
     return np.interp(eval_points, bs, intensity, left=0, right=0)
 
 
-def total_intensity(bs, bs_transfer_list, emission_model,
-                    co: BaseCompactObject, correction=0, **geodesic_kwargs):
+def total_intensity(bs: np.ndarray, bs_transfer_list: Sequence[np.ndarray],
+                    emission_model: Callable, co: BaseCompactObject,
+                    correction: float = 0, **geodesic_kwargs) -> np.ndarray:
     r"""Observed intensity profile of a face-on accretion disk.
 
     The observed intensity at impact parameter :math:`b` adds the
@@ -117,8 +120,10 @@ def total_intensity(bs, bs_transfer_list, emission_model,
     return intensity
 
 
-def compute_points(bs_transfer_list, emission_model, co: BaseCompactObject,
-                   Npixels, correction=0, **geodesic_kwargs):
+def compute_points(bs_transfer_list: Sequence[np.ndarray],
+                   emission_model: Callable, co: BaseCompactObject,
+                   Npixels: float, correction: float = 0,
+                   **geodesic_kwargs) -> np.ndarray:
     r"""Observed intensity on the observer's screen.
 
     The screen is a square grid covering ``[-10, 10]`` in units of M along

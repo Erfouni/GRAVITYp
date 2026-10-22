@@ -1,6 +1,7 @@
 """Transfer functions of light rays crossing the accretion disk."""
 
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy.interpolate import CubicSpline
 
 from .compact_object import BaseCompactObject
@@ -10,8 +11,9 @@ from .geodesic_integration import compute_geodesic
 __all__ = ["transfer_function", "compute_inner_shadow"]
 
 
-def transfer_function(bb, order, co: BaseCompactObject, correction: float = 0,
-                      **geodesic_kwargs):
+def transfer_function(bb: ArrayLike, order: int, co: BaseCompactObject,
+                      correction: float = 0, **geodesic_kwargs
+                      ) -> tuple[np.ndarray, np.ndarray]:
     r"""Coordinate :math:`r` where geodesics hit the disk the (order+1)-th time.
 
     For a face-on observer, a light ray with impact parameter :math:`b` crosses
@@ -96,8 +98,8 @@ def transfer_function(bb, order, co: BaseCompactObject, correction: float = 0,
     return (np.array(bs), np.array(rbs))
 
 
-def compute_inner_shadow(bmin, bmax, co: BaseCompactObject, samples=10,
-                         **geodesic_kwargs):
+def compute_inner_shadow(bmin: float, bmax: float, co: BaseCompactObject,
+                         samples: int = 10, **geodesic_kwargs) -> float:
     """Smallest impact parameter of the light rays crossing the accretion disk.
 
     For a face-on observer, light rays with smaller impact parameters are

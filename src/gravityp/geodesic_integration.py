@@ -34,7 +34,7 @@ def _find_interval(inverse_b2, photon_sph, local_maxima, lower_bound=1e-4, upper
     return (photon_sph[idx - 1], photon_sph[idx])
 
 
-def find_rmin(b, co: BaseCompactObject):
+def find_rmin(b: float, co: BaseCompactObject) -> float:
     """Minimum radius reached by a light ray with impact parameter `b`.
 
     Parameters
@@ -108,8 +108,9 @@ def _compute_outgoing(r_phs, inner_edge, rmin) -> bool:
     return (rmin > inner_edge) and (rmin > _MINIMUM_R)
 
 
-def compute_geodesic(b, co: BaseCompactObject,
-                     Npoints=_DEFAULT_NPOINTS, r0=_DEFAULT_R0):
+def compute_geodesic(b: float, co: BaseCompactObject,
+                     Npoints: int = _DEFAULT_NPOINTS, r0: float = _DEFAULT_R0
+                     ) -> tuple[np.ndarray, np.ndarray]:
     r"""Trajectory of a light ray with impact parameter `b`.
 
     The ray is integrated inwards from `r0` down to its minimum radius
