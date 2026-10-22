@@ -2,6 +2,7 @@
 
 import numpy as np
 import scipy.optimize as optimize
+from collections.abc import Iterable, Sequence
 
 from .compact_object import BaseCompactObject
 from .ray_tracing import _compute_nturns_scalar
@@ -72,7 +73,8 @@ def _get_minima(b_crits, epsilon, scalar_fun_nturns):
     return minima
 
 
-def find_rings_list(b_crits, co: BaseCompactObject, **geodesic_kwargs):
+def find_rings_list(b_crits: Iterable[float], co: BaseCompactObject,
+                    **geodesic_kwargs) -> list[dict]:
     r"""Intervals of impact parameters of the lensed and photon rings.
 
     Around each critical impact parameter :math:`b_c`, the number of turns
@@ -172,8 +174,11 @@ def _ring_intervals(bmin, bmax, rings, fill):
     return direct, lensed, p_ring
 
 
-def compute_optimal_array(bmin, bmax, rings, *, steps=None, Npoints=None,
-                          joint=True, fill=False):
+def compute_optimal_array(bmin: float, bmax: float, rings: list[dict], *,
+                          steps: float | Sequence[float] | None = None,
+                          Npoints: int | Sequence[int] | None = None,
+                          joint: bool = True, fill: bool = False
+                          ) -> np.ndarray | list[np.ndarray]:
     """Sample impact parameters around the lensed and photon rings.
 
     The direct, lensed and photon ring contributions are sampled separately,
