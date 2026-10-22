@@ -12,7 +12,7 @@ __all__ = ["transfer_function", "compute_inner_shadow"]
 
 def transfer_function(bb, order, co: BaseCompactObject, correction: float = 0,
                       **geodesic_kwargs):
-    r"""Radii where light rays cross the accretion disk for the `order`-th time.
+    r"""Coordinate :math:`r` where geodesics hit the disk the (order+1)-th time.
 
     For a face-on observer, a light ray with impact parameter :math:`b` crosses
     the disk for the :math:`(m+1)`-th time when its deflection reaches
@@ -52,7 +52,6 @@ def transfer_function(bb, order, co: BaseCompactObject, correction: float = 0,
     See Also
     --------
     gravityp.get_order : Order of a light ray from its deflection.
-
 
     Notes
     -----

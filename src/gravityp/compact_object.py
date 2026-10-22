@@ -10,7 +10,7 @@ __all__ = ["BaseCompactObject", "CompactObject"]
 
 
 def _get_increasing_maxima(r_phs, potential):
-    """Returns increasing local maxima of the potential with their photon sphere values"""
+    """Returns increasing local maxima of :math:`V(r)` with their ``r_phs``"""
     if len(r_phs) >= 1:  # There has to be at least 1 local maximum
         r_phs = np.array(r_phs)
         r_phs = np.sort(r_phs)[::-1]  # descending order of
@@ -145,8 +145,9 @@ class BaseCompactObject(ABC):
         """Photon spheres acting as potential barriers, and their potentials.
 
         Tuple ``(photon_sph, local_maxima)`` of arrays sorted by increasing
-        radius, hence `local_maxima` decreases along the arrays, and the
-        outermost barrier comes last.
+        radius and kept only if its maximum is higher than those further out.
+        Hence `local_maxima` decreases along the arrays, and the outermost
+        barrier comes last.
 
         Computed once per instance. The arrays are read-only, so the cached
         values cannot be modified in place.

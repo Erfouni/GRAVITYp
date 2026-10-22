@@ -10,7 +10,7 @@ __all__ = ["find_rings_list", "compute_optimal_array"]
 
 
 def _find_ring_edge(fun, lower_bound, upper_bound, to_upper=True) -> float:
-    """Returns the impact parameter value for which the number of turns is 0.75 or 1.25 (depending on fun)"""
+    """Returns the impact parameter for which the nturns is 0.75 or 1.25"""
     b = (upper_bound+lower_bound)/2.
     if not to_upper:  # Bounds are reversed
         upper_bound, lower_bound = lower_bound, upper_bound
@@ -61,7 +61,7 @@ def _find_ring_bs(b_crit, ring_interval, epsilon, scalar_fun_nturns):
 
 
 def _get_minima(b_crits, epsilon, scalar_fun_nturns):
-    """Returns the local minima of the nturns function between a list of critical impact parameters"""
+    """Returns the local minima of ``nturns`` between a list of ``b_crits``"""
     minima = []
     for i, b_crit in enumerate(b_crits[:-1]):
         bounds = (b_crits[i]+epsilon, b_crits[i+1]-epsilon)

@@ -49,7 +49,7 @@ def find_rmin(b, co: BaseCompactObject):
     float
         Turning point of the ray, i.e. the root of :math:`V(r) = 1/b^2` found
         with Brent's method, if the ray is scattered. Otherwise the ray is
-        captured and its inner edge `co.inner_edge` is returned.
+        captured and the inner edge `co.inner_edge` is returned.
 
     See Also
     --------

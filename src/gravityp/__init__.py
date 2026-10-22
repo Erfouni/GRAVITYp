@@ -1,5 +1,5 @@
 """Optical appearance of spherically symmetric compact objects in General
-Reltivity.
+Relativity.
 
 Source: https://github.com/alvaroslzar/GRAVITYp
 """

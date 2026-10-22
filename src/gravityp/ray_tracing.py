@@ -85,8 +85,8 @@ def get_order(deviation: float, correction: float = 0) -> int:
 
     Notes
     -----
-    For a face-on observer, a light ray of order 0, 1 or 2 crosses the
-    accretion disk once, twice, or three or more times, respectively. This
+    For a face-on observer, a light ray of order 0 crosses the accretion disk
+    at most once, twice if order 1 and three or more if order 2. This
     classification into direct, lensed and photon ring images follows [1]_.
 
     References
