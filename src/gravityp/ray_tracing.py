@@ -1,6 +1,7 @@
 """Number of turns and order of light rays."""
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from .compact_object import BaseCompactObject
 from .geodesic_integration import compute_geodesic
@@ -15,7 +16,8 @@ def _compute_nturns_scalar(b, co: BaseCompactObject, **geodesic_kwargs):
     return np.abs(phi[-1])/(2*np.pi)
 
 
-def compute_nturns(bs, co: BaseCompactObject, **geodesic_kwargs):
+def compute_nturns(bs: ArrayLike, co: BaseCompactObject,
+                   **geodesic_kwargs) -> np.ndarray:
     r"""Number of turns of light rays with impact parameters `bs`.
 
     Parameters
